@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scanner Material Gudang</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 450px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+    }
+    h2 { text-align: center; color: #1e3a8a; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      margin-top: 7px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 17px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      background: #2563eb;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    #save { background: #15803d; }
+    #reader { margin-top: 15px; }
+    #status { margin-top: 15px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>SCANNER MATERIAL GUDANG</h2>
+
+    <div id="reader"></div>
+    <button onclick="startScanner()">BUKA KAMERA / SCAN</button>
+
+    <label>Part Number</label>
+    <input id="partNumber" type="text" placeholder="Scan atau isi Part Number">
+
+    <label>Quantity</label>
+    <input id="quantity" type="number" min="1" placeholder="Masukkan Quantity">
+
+    <button id="save" onclick="saveData()">SIMPAN DATA</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // GANTI dengan URL Web App Apps Script milik Anda
+    const SCRIPT_URL = "TEMPEL_URL_WEB_APP_DI_SINI";
+
+    let scanner;
+
+    async function startScanner() {
+      try {
+        if (!scanner) {
+          scanner = new Html5Qrcode("reader");
+        }
+
+        const formats = [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.ITF,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.QR_CODE
+        ];
+
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 150 },
+            formatsToSupport: formats },
+          async (decodedText) => {
+            document.getElementById("partNumber").value = decodedText;
+            await scanner.stop();
+            document.getElementById("status").innerText =
+              "Barcode berhasil dibaca.";
+          }
+        );
+      } catch (error) {
+        document.getElementById("status").innerText =
+          "Kamera gagal dibuka: " + error;
+      }
+    }
+
+    function saveData() {
+      const part = document.getElementById("partNumber").value.trim();
+      const qty = document.getElementById("quantity").value;
+      const status = document.getElementById("status");
+
+      if (!part || !qty || Number(qty) <= 0) {
+        status.innerText = "Isi Part Number dan Quantity dengan benar.";
+        return;
+      }
+
+      if (SCRIPT_URL.includes("TEMPEL_URL")) {
+        status.innerText = "URL Apps Script belum dipasang.";
+        return;
+      }
+
+      status.innerText = "Mengirim data...";
+
+      const oldScript = document.getElementById("sendRequest");
+      if (oldScript) oldScript.remove();
+
+      const params = new URLSearchParams({
+        action: "save",
+        partNumber: part,
+        quantity: qty,
+        callback: "receiveScanResult"
+      });
+
+      const script = document.createElement("script");
+      script.id = "sendRequest";
+      script.src = SCRIPT_URL + "?" + params.toString();
+      script.onerror = () => {
+        status.innerText = "Pengiriman gagal. Periksa koneksi dan URL.";
+      };
+      document.body.appendChild(script);
+    }
+
+    // Dipanggil oleh Apps Script setelah proses penyimpanan
+    window.receiveScanResult = function(result) {
+      const status = document.getElementById("status");
+
+      if (result && result.ok) {
+        status.innerText = "Data berhasil disimpan!";
+        document.getElementById("partNumber").value = "";
+        document.getElementById("quantity").value = "";
+      } else {
+        status.innerText = "Gagal menyimpan: " +
+          (result && result.message ? result.message : "Kesalahan server");
+      }
+    };
+  </script>
+</body>
+</html>
