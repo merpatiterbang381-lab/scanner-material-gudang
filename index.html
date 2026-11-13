@@ -3,130 +3,343 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scanner Material Gudang</title>
+  <meta name="theme-color" content="#142338">
+  <title>Scanner Material Gudang | PT Ingress Industrial Indonesia</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
+    :root {
+      --navy: #142338;
+      --navy-2: #203650;
+      --red: #bd2634;
+      --red-dark: #971d29;
+      --ink: #182433;
+      --muted: #687789;
+      --line: #dce3eb;
+      --paper: #ffffff;
+      --bg: #eef2f6;
+      --green: #16794a;
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
       margin: 0;
-      padding: 20px;
+      padding: 22px 14px 36px;
+      background: linear-gradient(145deg, #e8edf3 0%, #f6f8fb 55%, #e9eef4 100%);
+      color: var(--ink);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
     }
-    .container {
-      max-width: 450px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 14px;
+    .app { width: 100%; max-width: 560px; margin: 0 auto; }
+    .topbar {
+      background: var(--paper);
+      border: 1px solid #dfe5ec;
+      border-top: 5px solid var(--red);
+      border-radius: 18px;
+      padding: 17px 18px 15px;
+      box-shadow: 0 8px 24px rgba(20,35,56,.08);
+      margin-bottom: 16px;
     }
-    h2 { text-align: center; color: #1e3a8a; }
-    label { display: block; margin-top: 15px; font-weight: bold; }
-    input {
+    .brand-logo {
+      display: block;
       width: 100%;
-      box-sizing: border-box;
-      padding: 13px;
-      margin-top: 7px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 17px;
+      max-width: 490px;
+      height: auto;
+      object-fit: contain;
+      margin: 0 auto 12px;
+    }
+    .brand-line { height: 1px; background: #e5e9ef; margin: 10px 0 12px; }
+    .brand-caption {
+      color: var(--navy);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .hero {
+      background: linear-gradient(120deg, var(--navy), var(--navy-2));
+      color: white;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 24px rgba(20,35,56,.16);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero:after {
+      content: "";
+      position: absolute;
+      width: 145px; height: 145px;
+      border: 22px solid rgba(255,255,255,.06);
+      border-radius: 50%;
+      right: -42px; top: -58px;
+    }
+    .eyebrow {
+      color: #f3b8bd;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    h1 { font-size: 23px; line-height: 1.2; margin: 0 0 6px; }
+    .hero p { margin: 0; color: #d5dfeb; font-size: 13px; line-height: 1.5; }
+    .panel {
+      background: var(--paper);
+      border: 1px solid #e0e6ed;
+      border-radius: 18px;
+      padding: 19px;
+      box-shadow: 0 8px 24px rgba(20,35,56,.07);
+    }
+    .section-title {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--navy); font-size: 15px; font-weight: 800;
+      margin: 0 0 15px;
+    }
+    .section-number {
+      width: 27px; height: 27px; display: grid; place-items: center;
+      background: #fbeaec; color: var(--red); border-radius: 8px;
+      font-size: 12px; font-weight: 900;
+    }
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border: 1px dashed #c7d1dd;
+      border-radius: 14px;
+      background: #f7f9fb;
+      min-height: 58px;
+    }
+    #reader:empty:before {
+      content: "Kamera belum diaktifkan";
+      min-height: 58px; display: grid; place-items: center;
+      color: #8794a4; font-size: 13px;
+    }
+    #reader video { border-radius: 12px; }
+    #reader__dashboard_section_csr button {
+      border: 0 !important; border-radius: 8px !important;
+      padding: 8px 12px !important; background: var(--navy) !important;
+      color: white !important;
+    }
+    .field { margin-top: 15px; }
+    label {
+      display: block; color: #344457; font-size: 12px;
+      font-weight: 800; margin-bottom: 7px;
+    }
+    input, select {
+      width: 100%; min-height: 48px; padding: 12px 13px;
+      border: 1px solid #cfd8e2; border-radius: 10px;
+      background: #fff; color: var(--ink); font-size: 15px;
+      outline: none; transition: border .15s, box-shadow .15s;
+    }
+    input:focus, select:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(189,38,52,.10);
+    }
+    .transaction-options {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .transaction-options label {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 48px; border: 1px solid #d5dde6;
+      border-radius: 10px; margin: 0; cursor: pointer;
+      font-size: 14px; color: #526174; background: #f8fafc;
+    }
+    .transaction-options input { display: none; }
+    .transaction-options label:has(input:checked) {
+      border: 2px solid var(--green); color: var(--green);
+      background: #edf8f2;
+    }
+    .transaction-options label.out:has(input:checked) {
+      border: 2px solid var(--red); color: var(--red);
+      background: #fff1f2;
     }
     button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 15px;
-      border: 0;
-      border-radius: 8px;
-      color: white;
-      background: #2563eb;
-      font-size: 16px;
-      font-weight: bold;
+      width: 100%; min-height: 49px; border: 0; border-radius: 11px;
+      font-size: 14px; font-weight: 800; cursor: pointer;
+      transition: transform .12s, opacity .12s;
     }
-    #save { background: #15803d; }
-    #reader { margin-top: 15px; }
-    #status { margin-top: 15px; text-align: center; }
+    button:active { transform: scale(.99); }
+    button:disabled { opacity: .6; cursor: wait; }
+    .btn-scan {
+      margin-top: 12px; background: var(--navy); color: white;
+      box-shadow: 0 5px 12px rgba(20,35,56,.15);
+    }
+    .btn-save {
+      margin-top: 19px; background: var(--red); color: white;
+      box-shadow: 0 5px 12px rgba(189,38,52,.18);
+    }
+    .btn-save:hover { background: var(--red-dark); }
+    #status {
+      display: none; margin-top: 14px; padding: 12px 13px;
+      border-radius: 10px; font-size: 13px; line-height: 1.45;
+      font-weight: 700;
+    }
+    #status.show { display: block; }
+    #status.success { color: #12633d; background: #eaf7ef; border: 1px solid #ccebd8; }
+    #status.error { color: #9d202b; background: #fff0f1; border: 1px solid #f3cbd0; }
+    #status.info { color: #284c72; background: #eef5fc; border: 1px solid #d3e3f3; }
+    .foot {
+      text-align: center; color: #7a8796; font-size: 11px;
+      margin-top: 16px; line-height: 1.5;
+    }
+    @media (max-width: 380px) {
+      body { padding: 12px 10px 24px; }
+      .panel { padding: 15px; }
+      .topbar { padding: 14px; }
+      h1 { font-size: 21px; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>SCANNER MATERIAL GUDANG</h2>
+  <main class="app">
+    <header class="topbar">
+      <img class="brand-logo" src="logo-ingress.png"
+           alt="PT Ingress Industrial Indonesia"
+           onerror="this.style.display='none'">
+      <div class="brand-line"></div>
+      <div class="brand-caption">Warehouse Material Control</div>
+    </header>
 
-    <div id="reader"></div>
-    <button onclick="startScanner()">BUKA KAMERA / SCAN</button>
+    <section class="hero">
+      <div class="eyebrow">Warehouse Digital System</div>
+      <h1>Scanner Material Gudang</h1>
+      <p>Scan barcode, catat jumlah material, dan pilih jenis transaksi masuk atau keluar.</p>
+    </section>
 
-    <label>Part Number</label>
-    <input id="partNumber" type="text" placeholder="Scan atau isi Part Number">
+    <section class="panel">
+      <h2 class="section-title"><span class="section-number">01</span> Scan Barcode Material</h2>
+      <div id="reader"></div>
+      <button class="btn-scan" id="scanButton" type="button" onclick="startScanner()">BUKA KAMERA / SCAN BARCODE</button>
 
-    <label>Quantity</label>
-    <input id="quantity" type="number" min="1" placeholder="Masukkan Quantity">
+      <div class="field">
+        <label for="partNumber">PART NUMBER</label>
+        <input id="partNumber" type="text" placeholder="Hasil scan atau isi Part Number" autocomplete="off">
+      </div>
 
-    <button id="save" onclick="saveData()">SIMPAN DATA</button>
-    <div id="status"></div>
-  </div>
+      <div class="field">
+        <label for="quantity">QUANTITY</label>
+        <input id="quantity" type="number" min="1" step="any" inputmode="decimal" placeholder="Masukkan jumlah material">
+      </div>
+
+      <div class="field">
+        <label for="operator">NAMA OPERATOR</label>
+        <input id="operator" type="text" placeholder="Masukkan nama operator" autocomplete="name">
+      </div>
+
+      <div class="field">
+        <label>JENIS TRANSAKSI</label>
+        <div class="transaction-options">
+          <label>
+            <input type="radio" name="transactionType" value="IN" checked>
+            IN · MATERIAL MASUK
+          </label>
+          <label class="out">
+            <input type="radio" name="transactionType" value="OUT">
+            OUT · MATERIAL KELUAR
+          </label>
+        </div>
+      </div>
+
+      <button class="btn-save" id="saveButton" type="button" onclick="saveData()">SIMPAN DATA</button>
+      <div id="status" role="status" aria-live="polite"></div>
+    </section>
+
+    <footer class="foot">
+      PT. Ingress Industrial Indonesia<br>
+      Warehouse Material Control System
+    </footer>
+  </main>
 
   <script>
-    // GANTI dengan URL Web App Apps Script milik Anda
+    // GANTI nilai ini dengan URL Web App Apps Script Anda yang berakhiran /exec.
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHt3FVgWrAuWSonItcHGSezO3XO60NmrA0jJ0R-T-Z_nIzkiZu0t2JQ5djR2KeHU6D/exec";
 
-    let scanner;
+    let scanner = null;
+    let scannerRunning = false;
+
+    function showStatus(message, type) {
+      const status = document.getElementById("status");
+      status.textContent = message;
+      status.className = "show " + type;
+    }
 
     async function startScanner() {
+      const button = document.getElementById("scanButton");
       try {
+        if (typeof Html5Qrcode === "undefined") {
+          throw new Error("Library scanner tidak berhasil dimuat. Periksa koneksi internet.");
+        }
         if (!scanner) {
-          scanner = new Html5Qrcode("reader");
+          const formats = [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.ITF,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.QR_CODE
+          ];
+          scanner = new Html5Qrcode("reader", { formatsToSupport: formats });
+        }
+        if (scannerRunning) {
+          await scanner.stop();
+          scannerRunning = false;
+          button.textContent = "BUKA KAMERA / SCAN BARCODE";
+          return;
         }
 
-        const formats = [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.ITF,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.QR_CODE
-        ];
-
+        showStatus("Meminta akses kamera...", "info");
         await scanner.start(
           { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 250, height: 150 },
-            formatsToSupport: formats },
+          { fps: 10, qrbox: { width: 250, height: 150 } },
           async (decodedText) => {
             document.getElementById("partNumber").value = decodedText;
-            await scanner.stop();
-            document.getElementById("status").innerText =
-              "Barcode berhasil dibaca.";
+            if (scannerRunning) {
+              await scanner.stop();
+              scannerRunning = false;
+            }
+            button.textContent = "BUKA KAMERA / SCAN BARCODE";
+            showStatus("Barcode berhasil dibaca. Silakan isi Quantity dan Nama Operator.", "success");
           }
         );
+        scannerRunning = true;
+        button.textContent = "HENTIKAN KAMERA";
+        showStatus("Kamera aktif. Arahkan ke barcode material.", "info");
       } catch (error) {
-        document.getElementById("status").innerText =
-          "Kamera gagal dibuka: " + error;
+        scannerRunning = false;
+        button.textContent = "BUKA KAMERA / SCAN BARCODE";
+        showStatus("Kamera gagal dibuka: " + error, "error");
       }
     }
 
     function saveData() {
       const part = document.getElementById("partNumber").value.trim();
       const qty = document.getElementById("quantity").value;
-      const status = document.getElementById("status");
+      const operator = document.getElementById("operator").value.trim();
+      const transactionType = document.querySelector('input[name="transactionType"]:checked').value;
+      const saveButton = document.getElementById("saveButton");
 
-      if (!part || !qty || Number(qty) <= 0) {
-        status.innerText = "Isi Part Number dan Quantity dengan benar.";
+      if (!part || !qty || Number(qty) <= 0 || !operator) {
+        showStatus("Lengkapi Part Number, Quantity, dan Nama Operator dengan benar.", "error");
         return;
       }
-
-      if (SCRIPT_URL.includes("TEMPEL_URL")) {
-        status.innerText = "URL Apps Script belum dipasang.";
+      if (!SCRIPT_URL.startsWith("https://script.google.com/macros/s/") ||
+          !SCRIPT_URL.endsWith("/exec")) {
+        showStatus("URL Apps Script belum dipasang dengan benar di index.html.", "error");
         return;
       }
-
-      status.innerText = "Mengirim data...";
 
       const oldScript = document.getElementById("sendRequest");
       if (oldScript) oldScript.remove();
+
+      saveButton.disabled = true;
+      showStatus("Mengirim data ke Google Sheets...", "info");
 
       const params = new URLSearchParams({
         action: "save",
         partNumber: part,
         quantity: qty,
+        operator: operator,
+        transactionType: transactionType,
         callback: "receiveScanResult"
       });
 
@@ -134,23 +347,28 @@
       script.id = "sendRequest";
       script.src = SCRIPT_URL + "?" + params.toString();
       script.onerror = () => {
-        status.innerText = "Pengiriman gagal. Periksa koneksi dan URL.";
+        saveButton.disabled = false;
+        showStatus("Pengiriman gagal. Periksa koneksi internet dan URL Apps Script.", "error");
+        script.remove();
       };
       document.body.appendChild(script);
     }
 
-    // Dipanggil oleh Apps Script setelah proses penyimpanan
     window.receiveScanResult = function(result) {
-      const status = document.getElementById("status");
+      const saveButton = document.getElementById("saveButton");
+      saveButton.disabled = false;
 
       if (result && result.ok) {
-        status.innerText = "Data berhasil disimpan!";
+        showStatus("Data berhasil disimpan ke Google Sheets.", "success");
         document.getElementById("partNumber").value = "";
         document.getElementById("quantity").value = "";
+        document.getElementById("operator").value = "";
+        document.querySelector('input[name="transactionType"][value="IN"]').checked = true;
       } else {
-        status.innerText = "Gagal menyimpan: " +
-          (result && result.message ? result.message : "Kesalahan server");
+        showStatus("Gagal menyimpan: " + (result && result.message ? result.message : "Kesalahan server."), "error");
       }
+      const script = document.getElementById("sendRequest");
+      if (script) script.remove();
     };
   </script>
 </body>
