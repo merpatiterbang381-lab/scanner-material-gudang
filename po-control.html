@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PO Control | Warehouse</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f1f5f9;
+  color: #172033;
+}
+
+.container {
+  max-width: 1500px;
+  margin: auto;
+}
+
+.header {
+  background: linear-gradient(120deg, #102b46, #176b87);
+  color: white;
+  padding: 25px 28px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  box-shadow: 0 5px 18px rgba(15, 40, 65, .13);
+}
+
+.header h1 {
+  margin: 0 0 8px;
+  font-size: 27px;
+}
+
+.header p {
+  margin: 0;
+  color: #d7e8f2;
+  font-size: 13px;
+}
+
+.header-right {
+  text-align: right;
+  font-size: 12px;
+  color: #e2edf5;
+}
+
+.section-title {
+  font-size: 17px;
+  font-weight: bold;
+  margin: 27px 0 14px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 13px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .04);
+}
+
+.card-label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.card-value {
+  font-size: 27px;
+  font-weight: 800;
+  margin-top: 10px;
+  color: #142c45;
+  overflow-wrap: anywhere;
+}
+
+.card-sub {
+  color: #94a3b8;
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+.card.open .card-value {
+  color: #d97706;
+}
+
+.card.close .card-value {
+  color: #15803d;
+}
+
+.card.outstanding .card-value {
+  color: #dc2626;
+}
+
+.panel {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  padding: 20px;
+  margin-top: 22px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .04);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 17px;
+}
+
+.toolbar h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.controls {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+input, select {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: white;
+  font-size: 13px;
+  outline: none;
+}
+
+input {
+  min-width: 220px;
+}
+
+input:focus, select:focus {
+  border-color: #167c9c;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  background: #176b87;
+}
+
+button:hover {
+  opacity: .88;
+}
+
+button.excel {
+  background: #16834a;
+}
+
+button.pdf {
+  background: #c0392b;
+}
+
+button.refresh {
+  background: #334155;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  min-width: 950px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+thead {
+  background: #102b46;
+  color: white;
+}
+
+th {
+  padding: 14px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #e8edf2;
+  white-space: nowrap;
+}
+
+tbody tr:hover {
+  background: #f1f8fb;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+.part {
+  font-weight: bold;
+  color: #145477;
+}
+
+.status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.status.OPEN {
+  color: #a45b00;
+  background: #fff1d6;
+}
+
+.status.CLOSE {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.outstanding-number {
+  font-weight: bold;
+  color: #dc2626;
+}
+
+.footer {
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 22px;
+}
+
+.message {
+  padding: 15px;
+  text-align: center;
+  color: #64748b;
+}
+
+.loading {
+  color: #176b87;
+}
+
+.error {
+  color: #dc2626;
+}
+
+@media(max-width: 900px) {
+  body {
+    padding: 12px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .header-right {
+    text-align: left;
+  }
+}
+
+@media(max-width: 480px) {
+  .cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .card-value {
+    font-size: 21px;
+  }
+
+  .controls, .controls input, .controls select {
+    width: 100%;
+  }
+
+  .controls button {
+    flex: 1;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <header class="header">
+    <div>
+      <h1>PO CONTROL</h1>
+      <p>Warehouse Management System | Purchase Order Monitoring</p>
+    </div>
+    <div class="header-right">
+      <div>WAREHOUSE DASHBOARD</div>
+      <div id="lastUpdate">Menunggu data...</div>
+    </div>
+  </header>
+
+  <div class="section-title">PO Overview</div>
+
+  <section class="cards">
+    <div class="card">
+      <div class="card-label">TOTAL PO</div>
+      <div class="card-value" id="totalPO">0</div>
+      <div class="card-sub">Total baris PO terdaftar</div>
+    </div>
+
+    <div class="card open">
+      <div class="card-label">OPEN PO</div>
+      <div class="card-value" id="openPO">0</div>
+      <div class="card-sub">Masih ada outstanding</div>
+    </div>
+
+    <div class="card close">
+      <div class="card-label">CLOSE PO</div>
+      <div class="card-value" id="closePO">0</div>
+      <div class="card-sub">Outstanding sudah nol</div>
+    </div>
+
+    <div class="card outstanding">
+      <div class="card-label">TOTAL OUTSTANDING</div>
+      <div class="card-value" id="totalOutstanding">0</div>
+      <div class="card-sub">Qty PO belum diterima</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <h2>Purchase Order List</h2>
+      <div class="controls">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Cari Part Number / Vendor / PO..."
+          oninput="renderTable()"
+        >
+
+        <select id="statusFilter" onchange="renderTable()">
+          <option value="ALL">Semua Status</option>
+          <option value="OPEN">OPEN</option>
+          <option value="CLOSE">CLOSE</option>
+        </select>
+
+        <button class="refresh" onclick="loadPO()">Refresh</button>
+        <button class="excel" onclick="exportExcel()">Excel</button>
+        <button class="pdf" onclick="exportPDF()">PDF</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="center">NO</th>
+            <th>PART NUMBER</th>
+            <th>VENDOR</th>
+            <th>NUMBER PO</th>
+            <th class="right">QTY PO</th>
+            <th class="right">QTY RECEIVING</th>
+            <th class="right">OUTSTANDING</th>
+            <th class="center">STATUS</th>
+          </tr>
+        </thead>
+        <tbody id="poTable">
+          <tr>
+            <td colspan="8" class="message loading">
+              Mengambil data PO...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="recordInfo" class="card-sub" style="margin-top:14px"></div>
+  </section>
+
+  <div class="footer">
+    Warehouse Management System | PO Control Dashboard
+  </div>
+
+</div>
+
+<script>
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbxHt3FVgWrAuWSonItcHGSezO3XO60NmrA0jJ0R-T-Z_nIzkiZu0t2JQ5djR2KeHU6D/exec";
+
+let poData = [];
+let lastUpdated = null;
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString("id-ID");
+}
+
+function safe(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function loadPO() {
+  document.getElementById("lastUpdate").textContent =
+    "Memperbarui data...";
+
+  const oldScript = document.getElementById("poApiScript");
+  if (oldScript) oldScript.remove();
+
+  const script = document.createElement("script");
+  script.id = "poApiScript";
+
+  const callbackName = "receivePOResult";
+
+  window[callbackName] = function(result) {
+    if (!result || !result.ok) {
+      showError(result?.message || "Gagal mengambil data PO.");
+      return;
+    }
+
+    poData = result.items || [];
+    lastUpdated = result.updatedAt;
+
+    updateSummary(result.summary || {});
+    renderTable();
+
+    document.getElementById("lastUpdate").textContent =
+      "Last Update: " +
+      new Date(lastUpdated).toLocaleString("id-ID");
+  };
+
+  script.onerror = function() {
+    showError("Tidak dapat terhubung ke server Apps Script.");
+  };
+
+  script.src =
+    API_URL +
+    "?action=po&callback=" + callbackName +
+    "&_=" + Date.now();
+
+  document.body.appendChild(script);
+}
+
+function updateSummary(summary) {
+  document.getElementById("totalPO").textContent =
+    formatNumber(summary.totalPO);
+
+  document.getElementById("openPO").textContent =
+    formatNumber(summary.openPO);
+
+  document.getElementById("closePO").textContent =
+    formatNumber(summary.closePO);
+
+  document.getElementById("totalOutstanding").textContent =
+    formatNumber(summary.totalOutstanding);
+}
+
+function renderTable() {
+  const keyword = document.getElementById("searchInput")
+    .value.toLowerCase().trim();
+
+  const status = document.getElementById("statusFilter").value;
+
+  const filtered = poData.filter(item => {
+    const text = [
+      item.partNumber,
+      item.vendor,
+      item.numberPO
+    ].join(" ").toLowerCase();
+
+    const matchSearch = text.includes(keyword);
+    const matchStatus = status === "ALL" || item.status === status;
+
+    return matchSearch && matchStatus;
+  });
+
+  const tbody = document.getElementById("poTable");
+
+  if (!filtered.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="message">
+          Tidak ada data PO yang sesuai.
+        </td>
+      </tr>`;
+  } else {
+    tbody.innerHTML = filtered.map((item, index) => `
+      <tr>
+        <td class="center">${index + 1}</td>
+        <td class="part">${safe(item.partNumber)}</td>
+        <td>${safe(item.vendor)}</td>
+        <td>${safe(item.numberPO)}</td>
+        <td class="right">${formatNumber(item.qtyPO)}</td>
+        <td class="right">${formatNumber(item.qtyReceiving)}</td>
+        <td class="right outstanding-number">
+          ${formatNumber(item.outstanding)}
+        </td>
+        <td class="center">
+          <span class="status ${safe(item.status)}">
+            ${safe(item.status)}
+          </span>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  document.getElementById("recordInfo").textContent =
+    "Menampilkan " + filtered.length +
+    " dari " + poData.length + " data PO.";
+}
+
+function showError(message) {
+  document.getElementById("poTable").innerHTML = `
+    <tr>
+      <td colspan="8" class="message error">
+        ${safe(message)}
+      </td>
+    </tr>`;
+
+  document.getElementById("lastUpdate").textContent =
+    "Gagal memperbarui data";
+}
+
+function exportExcel() {
+  if (!poData.length) {
+    alert("Belum ada data untuk diekspor.");
+    return;
+  }
+
+  const rows = poData.map((item, index) => ({
+    "NO": index + 1,
+    "Part Number": item.partNumber,
+    "Vendor": item.vendor,
+    "Number PO": item.numberPO,
+    "Qty PO": item.qtyPO,
+    "Qty Receiving": item.qtyReceiving,
+    "Outstanding": item.outstanding,
+    "Status": item.status
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "PO Control"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    "PO_Control_" + new Date().toISOString().slice(0, 10) + ".xlsx"
+  );
+}
+
+function exportPDF() {
+  if (!poData.length) {
+    alert("Belum ada data untuk diekspor.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a4"
+  });
+
+  doc.setFontSize(16);
+  doc.text("PURCHASE ORDER CONTROL", 14, 15);
+
+  doc.setFontSize(9);
+  doc.text(
+    "Warehouse Management System | " +
+    new Date().toLocaleString("id-ID"),
+    14,
+    22
+  );
+
+  const rows = poData.map((item, index) => [
+    index + 1,
+    item.partNumber,
+    item.vendor,
+    item.numberPO,
+    formatNumber(item.qtyPO),
+    formatNumber(item.qtyReceiving),
+    formatNumber(item.outstanding),
+    item.status
+  ]);
+
+  doc.autoTable({
+    startY: 28,
+    head: [[
+      "NO",
+      "PART NUMBER",
+      "VENDOR",
+      "NUMBER PO",
+      "QTY PO",
+      "QTY RECEIVING",
+      "OUTSTANDING",
+      "STATUS"
+    ]],
+    body: rows,
+    theme: "grid",
+    styles: {
+      fontSize: 8,
+      cellPadding: 2.5
+    },
+    headStyles: {
+      fillColor: [16, 43, 70]
+    }
+  });
+
+  doc.save(
+    "PO_Control_" + new Date().toISOString().slice(0, 10) + ".pdf"
+  );
+}
+
+loadPO();
+setInterval(loadPO, 30000);
+</script>
+
+</body>
+</html>
