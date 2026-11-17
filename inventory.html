@@ -1,37 +1,32 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#142338">
-
 <title>Inventory Control | PT Ingress Industrial Indonesia</title>
 
-<style>
+<!-- LIBRARY EXCEL -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+<!-- LIBRARY PDF -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+
+<style>
 :root {
   --navy: #142338;
   --navy2: #203650;
   --red: #bd2634;
-  --red-dark: #981e2b;
   --bg: #f1f4f8;
   --white: #ffffff;
   --text: #1c2938;
   --muted: #718096;
   --border: #e1e7ee;
-
   --green: #16804e;
-  --green-bg: #e9f7ef;
-
   --yellow: #b7791f;
-  --yellow-bg: #fff6df;
-
   --orange: #c65d19;
-  --orange-bg: #fff0e5;
-
   --gray: #667085;
-  --gray-bg: #f0f2f5;
 }
 
 * {
@@ -86,13 +81,12 @@ body {
 .header h1 {
   font-size: 24px;
   margin: 0 0 7px;
-  letter-spacing: .4px;
 }
 
 .header p {
   color: #d2dce8;
   font-size: 12px;
-  margin: 0;
+  margin: 3px 0;
 }
 
 .header-right {
@@ -145,36 +139,27 @@ body {
   font-size: 11px;
 }
 
-/* SUMMARY CARDS */
+/* SUMMARY */
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0,1fr));
   gap: 13px;
 }
 
 .card {
-  background: var(--white);
+  background: white;
   border: 1px solid var(--border);
   border-radius: 13px;
   padding: 17px;
   min-height: 112px;
   box-shadow: 0 3px 12px rgba(20,35,56,.035);
-  position: relative;
-  overflow: hidden;
+  border-left: 4px solid #315d8b;
 }
 
-.card:after {
-  content: "";
-  position: absolute;
-  right: -17px;
-  bottom: -25px;
-  width: 75px;
-  height: 75px;
-  border-radius: 50%;
-  background: var(--card-tint, #edf1f5);
-  opacity: .65;
-}
+.card.green { border-left-color: var(--green); }
+.card.red { border-left-color: var(--red); }
+.card.orange { border-left-color: var(--orange); }
 
 .card-label {
   font-size: 10px;
@@ -182,8 +167,6 @@ body {
   letter-spacing: .5px;
   color: var(--muted);
   text-transform: uppercase;
-  position: relative;
-  z-index: 1;
 }
 
 .card-value {
@@ -191,8 +174,6 @@ body {
   font-weight: 800;
   margin-top: 12px;
   color: var(--navy);
-  position: relative;
-  z-index: 1;
   overflow-wrap: anywhere;
 }
 
@@ -200,45 +181,13 @@ body {
   color: var(--muted);
   font-size: 10px;
   margin-top: 4px;
-  position: relative;
-  z-index: 1;
 }
 
-.card.blue {
-  border-left: 4px solid #315d8b;
-  --card-tint: #eaf1fa;
-}
-
-.card.green {
-  border-left: 4px solid var(--green);
-  --card-tint: var(--green-bg);
-}
-
-.card.red {
-  border-left: 4px solid var(--red);
-  --card-tint: #fdebed;
-}
-
-.card.orange {
-  border-left: 4px solid var(--orange);
-  --card-tint: var(--orange-bg);
-}
-
-.card.yellow {
-  border-left: 4px solid var(--yellow);
-  --card-tint: var(--yellow-bg);
-}
-
-.card.gray {
-  border-left: 4px solid var(--gray);
-  --card-tint: var(--gray-bg);
-}
-
-/* STATUS SUMMARY */
+/* STATUS */
 
 .status-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4,minmax(0,1fr));
   gap: 13px;
 }
 
@@ -260,11 +209,6 @@ body {
   place-items: center;
   font-size: 17px;
   font-weight: bold;
-  flex-shrink: 0;
-}
-
-.status-info {
-  min-width: 0;
 }
 
 .status-info strong {
@@ -288,17 +232,17 @@ body {
 
 .warning .status-icon {
   color: var(--yellow);
-  background: var(--yellow-bg);
+  background: #fff6df;
 }
 
 .normal .status-icon {
   color: var(--green);
-  background: var(--green-bg);
+  background: #e9f7ef;
 }
 
 .check .status-icon {
   color: var(--gray);
-  background: var(--gray-bg);
+  background: #f0f2f5;
 }
 
 /* MOVEMENT */
@@ -338,13 +282,8 @@ body {
   transition: width .4s;
 }
 
-.bar-in {
-  background: var(--green);
-}
-
-.bar-out {
-  background: var(--red);
-}
+.bar-in { background: var(--green); }
+.bar-out { background: var(--red); }
 
 .movement-value {
   text-align: right;
@@ -376,7 +315,6 @@ body {
 .search-box {
   flex: 1;
   min-width: 100px;
-  position: relative;
 }
 
 .search-box input {
@@ -389,12 +327,6 @@ body {
   font-size: 12px;
 }
 
-.search-box input:focus,
-.filter-select:focus {
-  border-color: var(--red);
-  box-shadow: 0 0 0 2px rgba(189,38,52,.08);
-}
-
 .filter-select {
   height: 40px;
   min-width: 145px;
@@ -404,11 +336,16 @@ body {
   background: white;
   color: var(--text);
   font-size: 12px;
-  outline: none;
+}
+
+.button-area {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn {
-  height: 40px;
+  min-height: 40px;
   padding: 0 15px;
   border: 0;
   border-radius: 8px;
@@ -419,14 +356,11 @@ body {
   cursor: pointer;
 }
 
-.btn:hover {
-  background: var(--navy2);
-}
+.btn:hover { opacity: .88; }
+.btn:disabled { opacity: .6; cursor: wait; }
 
-.btn:disabled {
-  opacity: .6;
-  cursor: wait;
-}
+.btn-excel { background: #16804e; }
+.btn-pdf { background: #bd2634; }
 
 /* TABLE */
 
@@ -459,7 +393,6 @@ th {
   padding: 14px 12px;
   text-align: left;
   font-size: 10px;
-  letter-spacing: .4px;
   white-space: nowrap;
 }
 
@@ -470,13 +403,7 @@ td {
   white-space: nowrap;
 }
 
-tbody tr:hover {
-  background: #f7f9fc;
-}
-
-tbody tr:last-child td {
-  border-bottom: 0;
-}
+tbody tr:hover { background: #f7f9fc; }
 
 .part-number {
   color: var(--navy);
@@ -488,9 +415,7 @@ tbody tr:last-child td {
   font-variant-numeric: tabular-nums;
 }
 
-.dos-value {
-  font-weight: bold;
-}
+.dos-value { font-weight: bold; }
 
 .remark {
   display: inline-block;
@@ -507,17 +432,17 @@ tbody tr:last-child td {
 
 .remark.warning {
   color: var(--yellow);
-  background: var(--yellow-bg);
+  background: #fff6df;
 }
 
 .remark.normal {
   color: var(--green);
-  background: var(--green-bg);
+  background: #e9f7ef;
 }
 
 .remark.check {
   color: var(--gray);
-  background: var(--gray-bg);
+  background: #f0f2f5;
 }
 
 .empty {
@@ -525,8 +450,6 @@ tbody tr:last-child td {
   color: var(--muted);
   padding: 35px !important;
 }
-
-/* TABLE FOOTER */
 
 .table-footer {
   padding: 13px 15px;
@@ -543,14 +466,7 @@ tbody tr:last-child td {
   color: var(--muted);
 }
 
-/* LOADING */
-
-.loading {
-  text-align: center;
-  padding: 35px;
-  color: var(--muted);
-  font-size: 12px;
-}
+/* LOADING AND ERROR */
 
 .spinner {
   width: 25px;
@@ -588,515 +504,275 @@ tbody tr:last-child td {
 
 /* RESPONSIVE */
 
-@media(max-width: 1050px) {
-
-  .summary-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+@media(max-width:1050px) {
+  .summary-grid,
   .status-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2,minmax(0,1fr));
   }
-
 }
 
-@media(max-width: 600px) {
-
-  body {
-    padding: 10px;
-  }
-
-  .header {
-    padding: 17px;
-  }
-
-  .header h1 {
-    font-size: 19px;
-  }
-
-  .logo {
-    width: 49px;
-    height: 49px;
-  }
-
-  .header-right {
-    text-align: left;
-  }
-
-  .summary-grid {
-    gap: 8px;
-  }
-
-  .card {
-    min-height: 100px;
-    padding: 12px;
-  }
-
-  .card-value {
-    font-size: 22px;
-  }
-
-  .status-grid {
-    gap: 8px;
-  }
-
-  .status-card {
-    padding: 11px;
-    gap: 8px;
-  }
-
-  .status-info strong {
-    font-size: 20px;
-  }
-
-  .toolbar {
-    align-items: stretch;
-  }
-
-  .search-area {
-    flex-direction: column;
-    min-width: 100%;
-  }
-
-  .filter-select,
-  .search-box input {
-    width: 100%;
-  }
-
-  .btn {
-    width: 100%;
-  }
-
+@media(max-width:600px) {
+  body { padding: 10px; }
+  .header { padding: 17px; }
+  .header h1 { font-size: 19px; }
+  .logo { width: 49px; height: 49px; }
+  .header-right { text-align: left; }
+  .summary-grid,.status-grid { gap: 8px; }
+  .card { min-height: 100px; padding: 12px; }
+  .card-value { font-size: 22px; }
+  .status-card { padding: 11px; gap: 8px; }
+  .status-info strong { font-size: 20px; }
+  .toolbar { align-items: stretch; }
+  .search-area { flex-direction: column; min-width: 100%; }
+  .filter-select,.search-box input { width: 100%; }
+  .button-area { display: grid; grid-template-columns: 1fr; }
+  .btn { width: 100%; }
   .movement-row {
     grid-template-columns: 75px 1fr 75px;
     gap: 7px;
   }
-
 }
-
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-  <!-- HEADER -->
-
-  <header class="header">
-
-    <div class="header-left">
-
-      <img
-        src="logo-ingress.png"
-        class="logo"
-        alt="Ingress Logo"
-        onerror="this.style.display='none'"
-      >
-
-      <div>
-        <h1>INVENTORY CONTROL</h1>
-        <p>PT Ingress Industrial Indonesia</p>
-        <p>Warehouse Material Monitoring System</p>
-      </div>
-
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <img src="logo-ingress.png" class="logo"
+         alt="Ingress Logo"
+         onerror="this.style.display='none'">
+    <div>
+      <h1>INVENTORY CONTROL</h1>
+      <p>PT Ingress Industrial Indonesia</p>
+      <p>Warehouse Material Monitoring System</p>
     </div>
-
-    <div class="header-right">
-
-      <div class="live-status">
-        <span class="live-dot"></span>
-        LIVE INVENTORY DATA
-      </div>
-
-      <div class="updated" id="lastUpdated">
-        Menunggu data...
-      </div>
-
-    </div>
-
-  </header>
-
-
-  <!-- SUMMARY -->
-
-  <div class="section-heading">
-
-    <h2>Inventory Overview</h2>
-
-    <span>Ringkasan persediaan material</span>
-
   </div>
 
-
-  <section class="summary-grid">
-
-    <div class="card blue">
-
-      <div class="card-label">
-        Total Part Number
-      </div>
-
-      <div class="card-value" id="totalPart">
-        -
-      </div>
-
-      <div class="card-note">
-        Part terdaftar
-      </div>
-
+  <div class="header-right">
+    <div class="live-status">
+      <span class="live-dot"></span>
+      LIVE INVENTORY DATA
     </div>
+    <div class="updated" id="lastUpdated">Menunggu data...</div>
+  </div>
+</header>
 
+<!-- SUMMARY -->
+<div class="section-heading">
+  <h2>Inventory Overview</h2>
+  <span>Ringkasan persediaan material</span>
+</div>
 
-    <div class="card green">
-
-      <div class="card-label">
-        Total Storage
-      </div>
-
-      <div class="card-value" id="totalStorage">
-        -
-      </div>
-
-      <div class="card-note">
-        Total persediaan PCS
-      </div>
-
-    </div>
-
-
-    <div class="card blue">
-
-      <div class="card-label">
-        Total Incoming
-      </div>
-
-      <div class="card-value" id="totalIncoming">
-        -
-      </div>
-
-      <div class="card-note">
-        Akumulasi material masuk
-      </div>
-
-    </div>
-
-
-    <div class="card red">
-
-      <div class="card-label">
-        Total Outgoing
-      </div>
-
-      <div class="card-value" id="totalOutgoing">
-        -
-      </div>
-
-      <div class="card-note">
-        Akumulasi material keluar
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- STOCK STATUS -->
-
-  <div class="section-heading">
-
-    <h2>Stock Status Monitoring</h2>
-
-    <span>Monitoring berdasarkan Day of Stock</span>
-
+<section class="summary-grid">
+  <div class="card">
+    <div class="card-label">Total Part Number</div>
+    <div class="card-value" id="totalPart">-</div>
+    <div class="card-note">Part terdaftar</div>
   </div>
 
-
-  <section class="status-grid">
-
-    <div class="status-card urgent">
-
-      <div class="status-icon">!</div>
-
-      <div class="status-info">
-        <strong id="urgentCount">-</strong>
-        <span>URGENT · DOS &lt; 7 HARI</span>
-      </div>
-
-    </div>
-
-
-    <div class="status-card warning">
-
-      <div class="status-icon">!</div>
-
-      <div class="status-info">
-        <strong id="warningCount">-</strong>
-        <span>WARNING · DOS 7–14 HARI</span>
-      </div>
-
-    </div>
-
-
-    <div class="status-card normal">
-
-      <div class="status-icon">✓</div>
-
-      <div class="status-info">
-        <strong id="normalCount">-</strong>
-        <span>NORMAL · DOS &gt; 14 HARI</span>
-      </div>
-
-    </div>
-
-
-    <div class="status-card check">
-
-      <div class="status-icon">?</div>
-
-      <div class="status-info">
-        <strong id="checkCount">-</strong>
-        <span>CHECK USAGE</span>
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- OUTSTANDING PO -->
-
-  <div class="section-heading">
-
-    <h2>Purchase Order Monitoring</h2>
-
-    <span>Outstanding PO</span>
-
+  <div class="card green">
+    <div class="card-label">Total Storage</div>
+    <div class="card-value" id="totalStorage">-</div>
+    <div class="card-note">Total persediaan PCS</div>
   </div>
 
-
-  <section class="summary-grid">
-
-    <div class="card orange">
-
-      <div class="card-label">
-        Total Outstanding PO
-      </div>
-
-      <div class="card-value" id="totalOutstanding">
-        -
-      </div>
-
-      <div class="card-note">
-        Total sisa PO dalam PCS
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- MOVEMENT -->
-
-  <div class="section-heading">
-
-    <h2>Material Movement</h2>
-
-    <span>Pergerakan kumulatif</span>
-
+  <div class="card">
+    <div class="card-label">Total Incoming</div>
+    <div class="card-value" id="totalIncoming">-</div>
+    <div class="card-note">Akumulasi material masuk</div>
   </div>
 
+  <div class="card red">
+    <div class="card-label">Total Outgoing</div>
+    <div class="card-value" id="totalOutgoing">-</div>
+    <div class="card-note">Akumulasi material keluar</div>
+  </div>
+</section>
 
-  <section class="movement-panel">
+<!-- STOCK STATUS -->
+<div class="section-heading">
+  <h2>Stock Status Monitoring</h2>
+  <span>Monitoring berdasarkan Day of Stock</span>
+</div>
 
-    <div class="movement-row">
-
-      <div class="movement-label">
-        INCOMING
-      </div>
-
-      <div class="bar-bg">
-        <div class="bar-fill bar-in" id="incomingBar"></div>
-      </div>
-
-      <div class="movement-value" id="incomingValue">
-        0 PCS
-      </div>
-
+<section class="status-grid">
+  <div class="status-card urgent">
+    <div class="status-icon">!</div>
+    <div class="status-info">
+      <strong id="urgentCount">-</strong>
+      <span>URGENT · DOS &lt; 7 HARI</span>
     </div>
-
-
-    <div class="movement-row">
-
-      <div class="movement-label">
-        OUTGOING
-      </div>
-
-      <div class="bar-bg">
-        <div class="bar-fill bar-out" id="outgoingBar"></div>
-      </div>
-
-      <div class="movement-value" id="outgoingValue">
-        0 PCS
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- INVENTORY TABLE -->
-
-  <div class="section-heading">
-
-    <h2>Inventory Detail</h2>
-
-    <span id="recordCount">
-      0 data
-    </span>
-
   </div>
 
+  <div class="status-card warning">
+    <div class="status-icon">!</div>
+    <div class="status-info">
+      <strong id="warningCount">-</strong>
+      <span>WARNING · DOS 7–14 HARI</span>
+    </div>
+  </div>
 
-  <section>
+  <div class="status-card normal">
+    <div class="status-icon">✓</div>
+    <div class="status-info">
+      <strong id="normalCount">-</strong>
+      <span>NORMAL · DOS &gt; 14 HARI</span>
+    </div>
+  </div>
 
-    <div class="toolbar">
+  <div class="status-card check">
+    <div class="status-icon">?</div>
+    <div class="status-info">
+      <strong id="checkCount">-</strong>
+      <span>CHECK USAGE</span>
+    </div>
+  </div>
+</section>
 
-      <div class="search-area">
+<!-- OUTSTANDING PO -->
+<div class="section-heading">
+  <h2>Purchase Order Monitoring</h2>
+  <span>Outstanding PO</span>
+</div>
 
-        <div class="search-box">
+<section class="summary-grid">
+  <div class="card orange">
+    <div class="card-label">Total Outstanding PO</div>
+    <div class="card-value" id="totalOutstanding">-</div>
+    <div class="card-note">Total sisa PO dalam PCS</div>
+  </div>
+</section>
 
-          <input
-            type="search"
-            id="searchInput"
-            placeholder="Cari Part Number / Vendor..."
-            oninput="renderTable()"
-          >
+<!-- MOVEMENT -->
+<div class="section-heading">
+  <h2>Material Movement</h2>
+  <span>Pergerakan kumulatif</span>
+</div>
 
-        </div>
+<section class="movement-panel">
+  <div class="movement-row">
+    <div class="movement-label">INCOMING</div>
+    <div class="bar-bg">
+      <div class="bar-fill bar-in" id="incomingBar"></div>
+    </div>
+    <div class="movement-value" id="incomingValue">0 PCS</div>
+  </div>
 
+  <div class="movement-row">
+    <div class="movement-label">OUTGOING</div>
+    <div class="bar-bg">
+      <div class="bar-fill bar-out" id="outgoingBar"></div>
+    </div>
+    <div class="movement-value" id="outgoingValue">0 PCS</div>
+  </div>
+</section>
 
-        <select
-          class="filter-select"
-          id="statusFilter"
-          onchange="renderTable()"
-        >
+<!-- INVENTORY TABLE -->
+<div class="section-heading">
+  <h2>Inventory Detail</h2>
+  <span id="recordCount">0 data</span>
+</div>
 
-          <option value="ALL">Semua Status</option>
-          <option value="URGENT">URGENT</option>
-          <option value="WARNING">WARNING</option>
-          <option value="NORMAL">NORMAL</option>
-          <option value="CHECK USAGE">CHECK USAGE</option>
+<section>
+  <div class="toolbar">
 
-        </select>
-
-
-        <select
-          class="filter-select"
-          id="sortFilter"
-          onchange="renderTable()"
-        >
-
-          <option value="URGENT">Urutkan: Paling Urgent</option>
-          <option value="DOS_ASC">DOS Terendah</option>
-          <option value="STORAGE_ASC">Storage Terendah</option>
-          <option value="PART_ASC">Part Number A-Z</option>
-
-        </select>
-
+    <div class="search-area">
+      <div class="search-box">
+        <input type="search" id="searchInput"
+               placeholder="Cari Part Number / Vendor..."
+               oninput="renderTable()">
       </div>
 
+      <select class="filter-select" id="statusFilter"
+              onchange="renderTable()">
+        <option value="ALL">Semua Status</option>
+        <option value="URGENT">URGENT</option>
+        <option value="WARNING">WARNING</option>
+        <option value="NORMAL">NORMAL</option>
+        <option value="CHECK USAGE">CHECK USAGE</option>
+      </select>
 
-      <button
-        class="btn"
-        id="refreshButton"
-        onclick="loadInventory()"
-      >
+      <select class="filter-select" id="sortFilter"
+              onchange="renderTable()">
+        <option value="URGENT">Paling Urgent</option>
+        <option value="DOS_ASC">DOS Terendah</option>
+        <option value="STORAGE_ASC">Storage Terendah</option>
+        <option value="PART_ASC">Part Number A-Z</option>
+      </select>
+    </div>
+
+    <div class="button-area">
+      <button class="btn" id="refreshButton"
+              onclick="loadInventory()">
         ↻ REFRESH DATA
       </button>
 
+      <button class="btn btn-excel"
+              onclick="downloadExcel()">
+        ↓ DOWNLOAD EXCEL
+      </button>
+
+      <button class="btn btn-pdf"
+              onclick="downloadPDF()">
+        ↓ DOWNLOAD PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="table-panel">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>NO</th>
+            <th>PART NUMBER</th>
+            <th>VENDOR</th>
+            <th>USAGE / DAY</th>
+            <th>OPENING STOCK</th>
+            <th>INCOMING</th>
+            <th>OUTGOING</th>
+            <th>STORAGE</th>
+            <th>DAY OF STOCK</th>
+            <th>OUTSTANDING PO</th>
+            <th>REMARK</th>
+          </tr>
+        </thead>
+
+        <tbody id="inventoryBody">
+          <tr>
+            <td colspan="11" class="empty">
+              <div class="spinner"></div>
+              Mengambil data inventory...
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-
-    <div class="table-panel">
-
-      <div class="table-scroll">
-
-        <table>
-
-          <thead>
-
-            <tr>
-              <th>NO</th>
-              <th>PART NUMBER</th>
-              <th>VENDOR</th>
-              <th>USAGE / DAY</th>
-              <th>OPENING STOCK</th>
-              <th>INCOMING</th>
-              <th>OUTGOING</th>
-              <th>STORAGE</th>
-              <th>DAY OF STOCK</th>
-              <th>OUTSTANDING PO</th>
-              <th>REMARK</th>
-            </tr>
-
-          </thead>
-
-          <tbody id="inventoryBody">
-
-            <tr>
-              <td colspan="11" class="empty">
-                <div class="spinner"></div>
-                Mengambil data inventory...
-              </td>
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-
-      <div class="table-footer">
-
-        <span id="tableInfo">
-          Menampilkan data inventory
-        </span>
-
-        <span>
-          Auto refresh: 30 detik
-        </span>
-
-      </div>
-
+    <div class="table-footer">
+      <span id="tableInfo">Menampilkan data inventory</span>
+      <span>Auto refresh: 30 detik</span>
     </div>
+  </div>
+</section>
 
-  </section>
-
-
-  <!-- FOOTER -->
-
-  <footer class="footer">
-
-    <strong>PT INGRESS INDUSTRIAL INDONESIA</strong><br>
-    Warehouse Inventory Control System<br>
-    Digital Warehouse Monitoring
-
-  </footer>
+<footer class="footer">
+  <strong>PT INGRESS INDUSTRIAL INDONESIA</strong><br>
+  Warehouse Inventory Control System<br>
+  Digital Warehouse Monitoring
+</footer>
 
 </div>
 
-
 <script>
-
 /* =====================================================
    CONFIGURATION
 ===================================================== */
 
-// GUNAKAN URL WEB APP APPS SCRIPT YANG SAMA
-// DENGAN QR SCANNER.
-
+// Gunakan URL Web App Apps Script WMS kamu.
 const SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbxHt3FVgWrAuWSonItcHGSezO3XO60NmrA0jJ0R-T-Z_nIzkiZu0t2JQ5djR2KeHU6D/exec";
 
@@ -1107,44 +783,28 @@ let refreshTimer = null;
 let requestTimer = null;
 let requestId = 0;
 
-
 /* =====================================================
-   FORMAT NUMBER
+   FORMAT
 ===================================================== */
 
 function formatNumber(value) {
-
   const number = Number(value) || 0;
 
   return new Intl.NumberFormat("id-ID", {
     maximumFractionDigits: 2
   }).format(number);
-
 }
 
-
-/* =====================================================
-   SAFE TEXT
-===================================================== */
-
 function escapeHTML(value) {
-
   return String(value == null ? "" : value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-
 }
 
-
-/* =====================================================
-   DATE FORMAT
-===================================================== */
-
 function formatDate(value) {
-
   if (!value) return "-";
 
   const date = new Date(value);
@@ -1158,33 +818,26 @@ function formatDate(value) {
     hour: "2-digit",
     minute: "2-digit"
   });
-
 }
-
 
 /* =====================================================
    JSONP RESPONSE
 ===================================================== */
 
 window.receiveInventoryResult = function(result) {
-
   clearTimeout(requestTimer);
 
   const button = document.getElementById("refreshButton");
-
   button.disabled = false;
   button.textContent = "↻ REFRESH DATA";
 
   if (!result || !result.ok) {
-
     showError(
       result && result.message
         ? result.message
         : "Tidak dapat membaca data inventory."
     );
-
     return;
-
   }
 
   inventoryData = Array.isArray(result.items)
@@ -1192,41 +845,30 @@ window.receiveInventoryResult = function(result) {
     : [];
 
   updateDashboard(result.summary || {});
-
   renderTable();
 
   document.getElementById("lastUpdated").textContent =
     "Last Update: " + formatDate(result.updatedAt);
-
 };
 
-
 /* =====================================================
-   LOAD INVENTORY DATA
+   LOAD INVENTORY
 ===================================================== */
 
 function loadInventory() {
-
   const button = document.getElementById("refreshButton");
 
   if (!SCRIPT_URL.startsWith(
     "https://script.google.com/macros/s/"
   ) || !SCRIPT_URL.endsWith("/exec")) {
-
     showError("URL Apps Script belum benar.");
-
     return;
-
   }
 
   requestId++;
-
   const currentRequest = requestId;
 
-  const oldScript = document.getElementById(
-    "inventoryRequest"
-  );
-
+  const oldScript = document.getElementById("inventoryRequest");
   if (oldScript) oldScript.remove();
 
   clearTimeout(requestTimer);
@@ -1235,26 +877,19 @@ function loadInventory() {
   button.textContent = "MEMUAT...";
 
   const params = new URLSearchParams({
-
     action: "inventory",
-
-    callback: "receiveInventoryResult"
-
+    callback: "receiveInventoryResult",
+    cacheBust: Date.now()
   });
 
   const script = document.createElement("script");
-
   script.id = "inventoryRequest";
-
-  script.src =
-    SCRIPT_URL + "?" + params.toString();
+  script.src = SCRIPT_URL + "?" + params.toString();
 
   script.onerror = function() {
-
     if (currentRequest !== requestId) return;
 
     clearTimeout(requestTimer);
-
     button.disabled = false;
     button.textContent = "↻ REFRESH DATA";
 
@@ -1263,11 +898,9 @@ function loadInventory() {
     );
 
     script.remove();
-
   };
 
   requestTimer = setTimeout(function() {
-
     if (currentRequest !== requestId) return;
 
     button.disabled = false;
@@ -1278,20 +911,16 @@ function loadInventory() {
     );
 
     script.remove();
-
   }, 30000);
 
   document.body.appendChild(script);
-
 }
-
 
 /* =====================================================
    UPDATE DASHBOARD
 ===================================================== */
 
 function updateDashboard(summary) {
-
   document.getElementById("totalPart").textContent =
     formatNumber(summary.totalPartNumber);
 
@@ -1319,13 +948,8 @@ function updateDashboard(summary) {
   document.getElementById("totalOutstanding").textContent =
     formatNumber(summary.outstandingPO);
 
-
-  // MOVEMENT BAR
-
   const incoming = Number(summary.totalIncoming) || 0;
-
   const outgoing = Number(summary.totalOutgoing) || 0;
-
   const maxMovement = Math.max(incoming, outgoing, 1);
 
   document.getElementById("incomingBar").style.width =
@@ -1339,66 +963,42 @@ function updateDashboard(summary) {
 
   document.getElementById("outgoingValue").textContent =
     formatNumber(outgoing) + " PCS";
-
 }
-
 
 /* =====================================================
    STATUS CLASS
 ===================================================== */
 
 function getRemarkClass(remark) {
-
   const value = String(remark || "").toUpperCase();
 
   if (value === "URGENT") return "urgent";
-
   if (value === "WARNING") return "warning";
-
   if (value === "NORMAL") return "normal";
 
   return "check";
-
 }
 
-
-/* =====================================================
-   DOS SORT VALUE
-===================================================== */
-
 function getDOSValue(item) {
-
   const value = Number(item.dayOfStock);
 
   return Number.isFinite(value) ? value : Infinity;
-
 }
-
 
 /* =====================================================
    FILTER AND SORT
 ===================================================== */
 
 function getFilteredData() {
-
   const search = document
     .getElementById("searchInput")
-    .value
-    .trim()
-    .toLowerCase();
+    .value.trim().toLowerCase();
 
-  const status = document
-    .getElementById("statusFilter")
-    .value;
-
-  const sort = document
-    .getElementById("sortFilter")
-    .value;
+  const status = document.getElementById("statusFilter").value;
+  const sort = document.getElementById("sortFilter").value;
 
   let filtered = inventoryData.filter(function(item) {
-
     const part = String(item.partNumber || "").toLowerCase();
-
     const vendor = String(item.vendor || "").toLowerCase();
 
     const matchesSearch =
@@ -1410,17 +1010,11 @@ function getFilteredData() {
       item.remark || "CHECK USAGE"
     ).toUpperCase();
 
-    const matchesStatus =
-      status === "ALL" ||
-      remark === status;
-
-    return matchesSearch && matchesStatus;
-
+    return matchesSearch &&
+      (status === "ALL" || remark === status);
   });
 
-
   if (sort === "URGENT") {
-
     const priority = {
       "URGENT": 1,
       "WARNING": 2,
@@ -1429,9 +1023,7 @@ function getFilteredData() {
     };
 
     filtered.sort(function(a, b) {
-
       const statusA = String(a.remark || "").toUpperCase();
-
       const statusB = String(b.remark || "").toUpperCase();
 
       const priorityDiff =
@@ -1441,52 +1033,36 @@ function getFilteredData() {
       if (priorityDiff !== 0) return priorityDiff;
 
       return getDOSValue(a) - getDOSValue(b);
-
     });
-
   }
 
   if (sort === "DOS_ASC") {
-
-    filtered.sort(function(a, b) {
-      return getDOSValue(a) - getDOSValue(b);
-    });
-
+    filtered.sort((a, b) => getDOSValue(a) - getDOSValue(b));
   }
 
   if (sort === "STORAGE_ASC") {
-
-    filtered.sort(function(a, b) {
-      return Number(a.storage || 0) -
-             Number(b.storage || 0);
-    });
-
+    filtered.sort((a, b) =>
+      Number(a.storage || 0) - Number(b.storage || 0)
+    );
   }
 
   if (sort === "PART_ASC") {
-
-    filtered.sort(function(a, b) {
-
-      return String(a.partNumber || "")
-        .localeCompare(String(b.partNumber || ""));
-
-    });
-
+    filtered.sort((a, b) =>
+      String(a.partNumber || "").localeCompare(
+        String(b.partNumber || "")
+      )
+    );
   }
 
   return filtered;
-
 }
 
-
 /* =====================================================
-   RENDER INVENTORY TABLE
+   RENDER TABLE
 ===================================================== */
 
 function renderTable() {
-
   const tbody = document.getElementById("inventoryBody");
-
   const filtered = getFilteredData();
 
   document.getElementById("recordCount").textContent =
@@ -1495,9 +1071,7 @@ function renderTable() {
   document.getElementById("tableInfo").textContent =
     "Menampilkan " + filtered.length + " data inventory";
 
-
   if (filtered.length === 0) {
-
     tbody.innerHTML = `
       <tr>
         <td colspan="11" class="empty">
@@ -1505,14 +1079,10 @@ function renderTable() {
         </td>
       </tr>
     `;
-
     return;
-
   }
 
-
   tbody.innerHTML = filtered.map(function(item, index) {
-
     const remark = String(
       item.remark || "CHECK USAGE"
     ).toUpperCase();
@@ -1527,68 +1097,249 @@ function renderTable() {
         : "-";
 
     return `
-
       <tr>
-
         <td>${index + 1}</td>
-
-        <td class="part-number">
-          ${escapeHTML(item.partNumber)}
-        </td>
-
-        <td>
-          ${escapeHTML(item.vendor || "-")}
-        </td>
-
-        <td class="num">
-          ${formatNumber(item.usage)}
-        </td>
-
-        <td class="num">
-          ${formatNumber(item.openingStock)}
-        </td>
-
-        <td class="num">
-          ${formatNumber(item.incoming)}
-        </td>
-
-        <td class="num">
-          ${formatNumber(item.outgoing)}
-        </td>
-
-        <td class="num">
-          <strong>${formatNumber(item.storage)}</strong>
-        </td>
-
-        <td class="num dos-value">
-          ${escapeHTML(dosDisplay)}
-        </td>
-
-        <td class="num">
-          ${formatNumber(item.outstandingPO)}
-        </td>
-
+        <td class="part-number">${escapeHTML(item.partNumber)}</td>
+        <td>${escapeHTML(item.vendor || "-")}</td>
+        <td class="num">${formatNumber(item.usage)}</td>
+        <td class="num">${formatNumber(item.openingStock)}</td>
+        <td class="num">${formatNumber(item.incoming)}</td>
+        <td class="num">${formatNumber(item.outgoing)}</td>
+        <td class="num"><strong>${formatNumber(item.storage)}</strong></td>
+        <td class="num dos-value">${escapeHTML(dosDisplay)}</td>
+        <td class="num">${formatNumber(item.outstandingPO)}</td>
         <td>
           <span class="remark ${remarkClass}">
             ${escapeHTML(remark)}
           </span>
         </td>
-
       </tr>
-
     `;
-
   }).join("");
-
 }
 
+/* =====================================================
+   EXPORT DATA
+===================================================== */
+
+// Export semua Part Number yang sudah dimuat,
+// tidak terpengaruh oleh pencarian dan filter tabel.
+
+function getExportRows() {
+  return inventoryData.map(function(item, index) {
+    return [
+      index + 1,
+      item.partNumber || "",
+      item.vendor || "",
+      Number(item.usage) || 0,
+      Number(item.openingStock) || 0,
+      Number(item.incoming) || 0,
+      Number(item.outgoing) || 0,
+      Number(item.storage) || 0,
+      item.dayOfStockDisplay || item.dayOfStock || "",
+      Number(item.outstandingPO) || 0,
+      item.remark || "CHECK USAGE"
+    ];
+  });
+}
+
+function getFileDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return year + "-" + month + "-" + day;
+}
+
+/* =====================================================
+   DOWNLOAD EXCEL
+===================================================== */
+
+function downloadExcel() {
+  if (!inventoryData.length) {
+    alert("Data inventory belum tersedia. Silakan refresh data.");
+    return;
+  }
+
+  if (typeof XLSX === "undefined") {
+    alert("Library Excel belum berhasil dimuat. Periksa koneksi internet.");
+    return;
+  }
+
+  const headers = [
+    "NO",
+    "PART NUMBER",
+    "VENDOR",
+    "USAGE / DAY",
+    "OPENING STOCK",
+    "INCOMING",
+    "OUTGOING",
+    "STORAGE",
+    "DAY OF STOCK",
+    "OUTSTANDING PO",
+    "REMARK"
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet([
+    headers,
+    ...getExportRows()
+  ]);
+
+  worksheet["!cols"] = [
+    { wch: 6 },
+    { wch: 20 },
+    { wch: 20 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 18 },
+    { wch: 16 }
+  ];
+
+  worksheet["!autofilter"] = {
+    ref: worksheet["!ref"]
+  };
+
+  worksheet["!freeze"] = {
+    xSplit: 0,
+    ySplit: 1
+  };
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Inventory Control"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    "Inventory_Control_" + getFileDate() + ".xlsx"
+  );
+}
+
+/* =====================================================
+   DOWNLOAD PDF
+===================================================== */
+
+function downloadPDF() {
+  if (!inventoryData.length) {
+    alert("Data inventory belum tersedia. Silakan refresh data.");
+    return;
+  }
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert("Library PDF belum berhasil dimuat. Periksa koneksi internet.");
+    return;
+  }
+
+  const jsPDF = window.jspdf.jsPDF;
+
+  const doc = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a4"
+  });
+
+  const date = new Date().toLocaleString("id-ID");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+
+  doc.text("INVENTORY CONTROL", 10, 13);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+
+  doc.text("PT Ingress Industrial Indonesia", 10, 19);
+  doc.text("Warehouse Material Monitoring System", 10, 24);
+
+  doc.text(
+    "Generated: " + date,
+    285,
+    13,
+    { align: "right" }
+  );
+
+  doc.text(
+    "Total Part Number: " + inventoryData.length,
+    285,
+    19,
+    { align: "right" }
+  );
+
+  const headers = [
+    "NO",
+    "PART NUMBER",
+    "VENDOR",
+    "USAGE/DAY",
+    "OPENING",
+    "INCOMING",
+    "OUTGOING",
+    "STORAGE",
+    "DAY OF STOCK",
+    "OUTSTANDING PO",
+    "REMARK"
+  ];
+
+  doc.autoTable({
+    startY: 30,
+    head: [headers],
+    body: getExportRows(),
+    theme: "grid",
+
+    styles: {
+      font: "helvetica",
+      fontSize: 7,
+      cellPadding: 2,
+      overflow: "linebreak"
+    },
+
+    headStyles: {
+      fillColor: [20, 35, 56],
+      textColor: [255, 255, 255],
+      fontStyle: "bold"
+    },
+
+    alternateRowStyles: {
+      fillColor: [243, 246, 250]
+    },
+
+    margin: {
+      left: 8,
+      right: 8,
+      bottom: 12
+    },
+
+    didDrawPage: function() {
+      const pageCount = doc.internal.getNumberOfPages();
+      const page = doc.internal.getCurrentPageInfo().pageNumber;
+
+      doc.setFontSize(8);
+      doc.text(
+        "Page " + page + " of " + pageCount,
+        285,
+        203,
+        { align: "right" }
+      );
+    }
+  });
+
+  doc.save(
+    "Inventory_Control_" + getFileDate() + ".pdf"
+  );
+}
 
 /* =====================================================
    ERROR DISPLAY
 ===================================================== */
 
 function showError(message) {
-
   const tbody = document.getElementById("inventoryBody");
 
   tbody.innerHTML = `
@@ -1601,41 +1352,30 @@ function showError(message) {
       </td>
     </tr>
   `;
-
 }
-
 
 /* =====================================================
    AUTO REFRESH
 ===================================================== */
 
 function startAutoRefresh() {
-
   clearInterval(refreshTimer);
 
   refreshTimer = setInterval(function() {
-
     if (!document.hidden) {
       loadInventory();
     }
-
   }, AUTO_REFRESH_MS);
-
 }
-
 
 /* =====================================================
    INITIALIZATION
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", function() {
-
   loadInventory();
-
   startAutoRefresh();
-
 });
-
 </script>
 
 </body>
