@@ -610,11 +610,6 @@ tbody tr:hover { background: #f7f9fc; }
     <div class="card-note">Persediaan IMPORT (PCS)</div>
   </div>
 
-  <div class="card orange">
-    <div class="card-label">IMPORT Aging &gt; 365 Hari</div>
-    <div class="card-value" id="importAgingOver365">-</div>
-    <div class="card-note">Batch dengan sisa stok</div>
-  </div>
 </section>
 
 <!-- STOCK STATUS -->
@@ -765,13 +760,10 @@ tbody tr:hover { background: #f7f9fc; }
             <th>VENDOR</th>
             <th>NUMBER PO</th>
             <th>USAGE / DAY</th>
-            <th>OPENING STOCK</th>
             <th>INCOMING</th>
             <th>OUTGOING</th>
             <th>STORAGE</th>
             <th>DAY OF STOCK</th>
-            <th>AGING (DAY)</th>
-            <th>AGING STATUS</th>
             <th>OUTSTANDING PO</th>
             <th>STOCK STATUS</th>
           </tr>
@@ -779,7 +771,7 @@ tbody tr:hover { background: #f7f9fc; }
 
         <tbody id="inventoryBody">
           <tr>
-            <td colspan="15" class="empty">
+            <td colspan="12" class="empty">
               <div class="spinner"></div>
               Mengambil data inventory...
             </td>
@@ -975,8 +967,6 @@ function updateDashboard(summary) {
   document.getElementById("importStorage").textContent =
     formatNumber(summary.importStorage);
 
-  document.getElementById("importAgingOver365").textContent =
-    formatNumber(summary.importAgingOver365);
 
   document.getElementById("urgentCount").textContent =
     formatNumber(summary.urgent);
@@ -1125,7 +1115,7 @@ function renderTable() {
 
   if (filtered.length === 0) {
     tbody.innerHTML = `
-      <tr><td colspan="15" class="empty">
+      <tr><td colspan="12" class="empty">
         Tidak ada data inventory yang sesuai.
       </td></tr>`;
     return;
@@ -1137,10 +1127,6 @@ function renderTable() {
     const source = String(item.source || "LOCAL").toUpperCase();
     const sourceClass = source === "IMPORT" ? "source-import" : "source-local";
     const dosDisplay = item.dayOfStockDisplay || "-";
-    const agingStatus = item.agingStatus || "-";
-    const agingValue = item.aging === "" || item.aging == null
-      ? "-" : formatNumber(item.aging);
-    const agingClass = Number(item.aging) > 365 ? "aging-old" : "";
 
     return `
       <tr>
@@ -1150,13 +1136,10 @@ function renderTable() {
         <td>${escapeHTML(item.vendor || "-")}</td>
         <td>${escapeHTML(item.numberPO || "-")}</td>
         <td class="num">${formatNumber(item.usage)}</td>
-        <td class="num">${formatNumber(item.openingStock)}</td>
         <td class="num">${formatNumber(item.incoming)}</td>
         <td class="num">${formatNumber(item.outgoing)}</td>
         <td class="num"><strong>${formatNumber(item.storage)}</strong></td>
         <td class="num dos-value">${escapeHTML(dosDisplay)}</td>
-        <td class="num ${agingClass}">${agingValue}</td>
-        <td>${escapeHTML(agingStatus)}</td>
         <td class="num">${formatNumber(item.outstandingPO)}</td>
         <td><span class="remark ${remarkClass}">${escapeHTML(remark)}</span></td>
       </tr>`;
@@ -1179,13 +1162,10 @@ function getExportRows() {
       item.vendor || "",
       item.numberPO || "",
       Number(item.usage) || 0,
-      Number(item.openingStock) || 0,
       Number(item.incoming) || 0,
       Number(item.outgoing) || 0,
       Number(item.storage) || 0,
       item.dayOfStockDisplay || item.dayOfStock || "",
-      item.aging === "" || item.aging == null ? "" : Number(item.aging) || 0,
-      item.agingStatus || "",
       Number(item.outstandingPO) || 0,
       item.remark || "CHECK USAGE"
     ];
@@ -1218,9 +1198,8 @@ function downloadExcel() {
 
   const headers = [
     "NO", "SOURCE", "PART NUMBER", "VENDOR", "NUMBER PO",
-    "USAGE / DAY", "OPENING STOCK", "INCOMING", "OUTGOING", "STORAGE",
-    "DAY OF STOCK", "AGING (DAY)", "AGING STATUS", "OUTSTANDING PO",
-    "STOCK STATUS"
+    "USAGE / DAY", "INCOMING", "OUTGOING", "STORAGE",
+    "DAY OF STOCK", "OUTSTANDING PO", "STOCK STATUS"
   ];
 
   const worksheet = XLSX.utils.aoa_to_sheet([
@@ -1230,9 +1209,8 @@ function downloadExcel() {
 
   worksheet["!cols"] = [
     { wch: 6 }, { wch: 10 }, { wch: 20 }, { wch: 20 },
-    { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 14 },
-    { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 13 },
-    { wch: 16 }, { wch: 18 }, { wch: 16 }
+    { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 14 },
+    { wch: 14 }, { wch: 16 }, { wch: 18 }, { wch: 16 }
   ];
 
   worksheet["!autofilter"] = {
@@ -1310,9 +1288,8 @@ function downloadPDF() {
 
   const headers = [
     "NO", "SOURCE", "PART NUMBER", "VENDOR", "NUMBER PO",
-    "USAGE/DAY", "OPENING", "INCOMING", "OUTGOING", "STORAGE",
-    "DAY OF STOCK", "AGING", "AGING STATUS", "OUTSTANDING PO",
-    "STOCK STATUS"
+    "USAGE/DAY", "INCOMING", "OUTGOING", "STORAGE",
+    "DAY OF STOCK", "OUTSTANDING PO", "STOCK STATUS"
   ];
 
   doc.autoTable({
@@ -1372,7 +1349,7 @@ function showError(message) {
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="15">
+      <td colspan="12">
         <div class="error-box">
           <strong>Gagal memuat data Inventory</strong><br>
           ${escapeHTML(message)}
