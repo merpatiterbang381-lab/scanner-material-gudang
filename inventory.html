@@ -409,6 +409,13 @@ tbody tr:hover { background: #f7f9fc; }
   color: var(--navy);
   font-weight: 800;
 }
+.source-tag {
+  display: inline-block; padding: 5px 8px; border-radius: 20px;
+  font-size: 9px; font-weight: 800;
+}
+.source-local { color: #245b91; background: #eaf2fb; }
+.source-import { color: #8b4a0b; background: #fff1df; }
+.aging-old { color: #bd2634; font-weight: 800; }
 
 .num {
   text-align: right;
@@ -590,6 +597,24 @@ tbody tr:hover { background: #f7f9fc; }
     <div class="card-value" id="totalOutgoing">-</div>
     <div class="card-note">Akumulasi material keluar</div>
   </div>
+
+  <div class="card">
+    <div class="card-label">LOCAL Storage</div>
+    <div class="card-value" id="localStorage">-</div>
+    <div class="card-note">Persediaan LOCAL (PCS)</div>
+  </div>
+
+  <div class="card green">
+    <div class="card-label">IMPORT Storage</div>
+    <div class="card-value" id="importStorage">-</div>
+    <div class="card-note">Persediaan IMPORT (PCS)</div>
+  </div>
+
+  <div class="card orange">
+    <div class="card-label">IMPORT Aging &gt; 365 Hari</div>
+    <div class="card-value" id="importAgingOver365">-</div>
+    <div class="card-note">Batch dengan sisa stok</div>
+  </div>
 </section>
 
 <!-- STOCK STATUS -->
@@ -682,9 +707,16 @@ tbody tr:hover { background: #f7f9fc; }
     <div class="search-area">
       <div class="search-box">
         <input type="search" id="searchInput"
-               placeholder="Cari Part Number / Vendor..."
+               placeholder="Cari Part Number / Vendor / PO..."
                oninput="renderTable()">
       </div>
+
+      <select class="filter-select" id="sourceFilter"
+              onchange="renderTable()">
+        <option value="ALL">Semua Source</option>
+        <option value="LOCAL">LOCAL</option>
+        <option value="IMPORT">IMPORT</option>
+      </select>
 
       <select class="filter-select" id="statusFilter"
               onchange="renderTable()">
@@ -728,22 +760,26 @@ tbody tr:hover { background: #f7f9fc; }
         <thead>
           <tr>
             <th>NO</th>
+            <th>SOURCE</th>
             <th>PART NUMBER</th>
             <th>VENDOR</th>
+            <th>NUMBER PO</th>
             <th>USAGE / DAY</th>
             <th>OPENING STOCK</th>
             <th>INCOMING</th>
             <th>OUTGOING</th>
             <th>STORAGE</th>
             <th>DAY OF STOCK</th>
+            <th>AGING (DAY)</th>
+            <th>AGING STATUS</th>
             <th>OUTSTANDING PO</th>
-            <th>REMARK</th>
+            <th>STOCK STATUS</th>
           </tr>
         </thead>
 
         <tbody id="inventoryBody">
           <tr>
-            <td colspan="11" class="empty">
+            <td colspan="15" class="empty">
               <div class="spinner"></div>
               Mengambil data inventory...
             </td>
@@ -933,6 +969,15 @@ function updateDashboard(summary) {
   document.getElementById("totalOutgoing").textContent =
     formatNumber(summary.totalOutgoing);
 
+  document.getElementById("localStorage").textContent =
+    formatNumber(summary.localStorage);
+
+  document.getElementById("importStorage").textContent =
+    formatNumber(summary.importStorage);
+
+  document.getElementById("importAgingOver365").textContent =
+    formatNumber(summary.importAgingOver365);
+
   document.getElementById("urgentCount").textContent =
     formatNumber(summary.urgent);
 
@@ -995,22 +1040,29 @@ function getFilteredData() {
     .value.trim().toLowerCase();
 
   const status = document.getElementById("statusFilter").value;
+  const source = document.getElementById("sourceFilter").value;
   const sort = document.getElementById("sortFilter").value;
 
   let filtered = inventoryData.filter(function(item) {
     const part = String(item.partNumber || "").toLowerCase();
     const vendor = String(item.vendor || "").toLowerCase();
+    const po = String(item.numberPO || "").toLowerCase();
 
     const matchesSearch =
       !search ||
       part.includes(search) ||
-      vendor.includes(search);
+      vendor.includes(search) ||
+      po.includes(search);
+
+    const matchesSource =
+      source === "ALL" || String(item.source || "LOCAL") === source;
 
     const remark = String(
       item.remark || "CHECK USAGE"
     ).toUpperCase();
 
     return matchesSearch &&
+      matchesSource &&
       (status === "ALL" || remark === status);
   });
 
@@ -1066,55 +1118,48 @@ function renderTable() {
   const filtered = getFilteredData();
 
   document.getElementById("recordCount").textContent =
-    filtered.length + " dari " + inventoryData.length + " Part";
+    filtered.length + " dari " + inventoryData.length + " baris";
 
   document.getElementById("tableInfo").textContent =
-    "Menampilkan " + filtered.length + " data inventory";
+    "Menampilkan " + filtered.length + " baris inventory";
 
   if (filtered.length === 0) {
     tbody.innerHTML = `
-      <tr>
-        <td colspan="11" class="empty">
-          Tidak ada data inventory yang sesuai.
-        </td>
-      </tr>
-    `;
+      <tr><td colspan="15" class="empty">
+        Tidak ada data inventory yang sesuai.
+      </td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.map(function(item, index) {
-    const remark = String(
-      item.remark || "CHECK USAGE"
-    ).toUpperCase();
-
+    const remark = String(item.remark || "CHECK USAGE").toUpperCase();
     const remarkClass = getRemarkClass(remark);
-
-    const dosDisplay =
-      item.dayOfStockDisplay !== undefined &&
-      item.dayOfStockDisplay !== null &&
-      item.dayOfStockDisplay !== ""
-        ? item.dayOfStockDisplay
-        : "-";
+    const source = String(item.source || "LOCAL").toUpperCase();
+    const sourceClass = source === "IMPORT" ? "source-import" : "source-local";
+    const dosDisplay = item.dayOfStockDisplay || "-";
+    const agingStatus = item.agingStatus || "-";
+    const agingValue = item.aging === "" || item.aging == null
+      ? "-" : formatNumber(item.aging);
+    const agingClass = Number(item.aging) > 365 ? "aging-old" : "";
 
     return `
       <tr>
         <td>${index + 1}</td>
+        <td><span class="source-tag ${sourceClass}">${escapeHTML(source)}</span></td>
         <td class="part-number">${escapeHTML(item.partNumber)}</td>
         <td>${escapeHTML(item.vendor || "-")}</td>
+        <td>${escapeHTML(item.numberPO || "-")}</td>
         <td class="num">${formatNumber(item.usage)}</td>
         <td class="num">${formatNumber(item.openingStock)}</td>
         <td class="num">${formatNumber(item.incoming)}</td>
         <td class="num">${formatNumber(item.outgoing)}</td>
         <td class="num"><strong>${formatNumber(item.storage)}</strong></td>
         <td class="num dos-value">${escapeHTML(dosDisplay)}</td>
+        <td class="num ${agingClass}">${agingValue}</td>
+        <td>${escapeHTML(agingStatus)}</td>
         <td class="num">${formatNumber(item.outstandingPO)}</td>
-        <td>
-          <span class="remark ${remarkClass}">
-            ${escapeHTML(remark)}
-          </span>
-        </td>
-      </tr>
-    `;
+        <td><span class="remark ${remarkClass}">${escapeHTML(remark)}</span></td>
+      </tr>`;
   }).join("");
 }
 
@@ -1129,14 +1174,18 @@ function getExportRows() {
   return inventoryData.map(function(item, index) {
     return [
       index + 1,
+      item.source || "LOCAL",
       item.partNumber || "",
       item.vendor || "",
+      item.numberPO || "",
       Number(item.usage) || 0,
       Number(item.openingStock) || 0,
       Number(item.incoming) || 0,
       Number(item.outgoing) || 0,
       Number(item.storage) || 0,
       item.dayOfStockDisplay || item.dayOfStock || "",
+      item.aging === "" || item.aging == null ? "" : Number(item.aging) || 0,
+      item.agingStatus || "",
       Number(item.outstandingPO) || 0,
       item.remark || "CHECK USAGE"
     ];
@@ -1168,17 +1217,10 @@ function downloadExcel() {
   }
 
   const headers = [
-    "NO",
-    "PART NUMBER",
-    "VENDOR",
-    "USAGE / DAY",
-    "OPENING STOCK",
-    "INCOMING",
-    "OUTGOING",
-    "STORAGE",
-    "DAY OF STOCK",
-    "OUTSTANDING PO",
-    "REMARK"
+    "NO", "SOURCE", "PART NUMBER", "VENDOR", "NUMBER PO",
+    "USAGE / DAY", "OPENING STOCK", "INCOMING", "OUTGOING", "STORAGE",
+    "DAY OF STOCK", "AGING (DAY)", "AGING STATUS", "OUTSTANDING PO",
+    "STOCK STATUS"
   ];
 
   const worksheet = XLSX.utils.aoa_to_sheet([
@@ -1187,17 +1229,10 @@ function downloadExcel() {
   ]);
 
   worksheet["!cols"] = [
-    { wch: 6 },
-    { wch: 20 },
-    { wch: 20 },
-    { wch: 14 },
-    { wch: 16 },
-    { wch: 14 },
-    { wch: 14 },
-    { wch: 14 },
-    { wch: 16 },
-    { wch: 18 },
-    { wch: 16 }
+    { wch: 6 }, { wch: 10 }, { wch: 20 }, { wch: 20 },
+    { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 14 },
+    { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 13 },
+    { wch: 16 }, { wch: 18 }, { wch: 16 }
   ];
 
   worksheet["!autofilter"] = {
@@ -1267,24 +1302,17 @@ function downloadPDF() {
   );
 
   doc.text(
-    "Total Part Number: " + inventoryData.length,
+    "Total Baris Inventory: " + inventoryData.length,
     285,
     19,
     { align: "right" }
   );
 
   const headers = [
-    "NO",
-    "PART NUMBER",
-    "VENDOR",
-    "USAGE/DAY",
-    "OPENING",
-    "INCOMING",
-    "OUTGOING",
-    "STORAGE",
-    "DAY OF STOCK",
-    "OUTSTANDING PO",
-    "REMARK"
+    "NO", "SOURCE", "PART NUMBER", "VENDOR", "NUMBER PO",
+    "USAGE/DAY", "OPENING", "INCOMING", "OUTGOING", "STORAGE",
+    "DAY OF STOCK", "AGING", "AGING STATUS", "OUTSTANDING PO",
+    "STOCK STATUS"
   ];
 
   doc.autoTable({
@@ -1344,7 +1372,7 @@ function showError(message) {
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="11">
+      <td colspan="15">
         <div class="error-box">
           <strong>Gagal memuat data Inventory</strong><br>
           ${escapeHTML(message)}
