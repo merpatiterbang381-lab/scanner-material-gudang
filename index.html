@@ -312,6 +312,15 @@ button:disabled {
   background: var(--red-dark);
 }
 
+.btn-finish {
+  margin-top: 9px;
+  min-height: 43px;
+  background: #eef2f6;
+  color: var(--navy);
+  border: 1px solid #d5dde6;
+  font-size: 12px;
+}
+
 #status {
   display: none;
   margin-top: 14px;
@@ -506,6 +515,22 @@ button:disabled {
     </div>
 
 
+    <!-- NOMOR SURAT JALAN - KHUSUS LOCAL IN -->
+    <div class="field" id="suratJalanField">
+      <label for="suratJalan">NOMOR SURAT JALAN</label>
+      <input
+        id="suratJalan"
+        type="text"
+        placeholder="Masukkan nomor surat jalan"
+        autocomplete="off"
+      >
+      <div class="helper">
+        Khusus LOCAL IN. Nomor ini dipertahankan untuk beberapa Part Number
+        dalam satu dokumen penerimaan.
+      </div>
+    </div>
+
+
     <!-- OPERATOR -->
 
     <div class="field">
@@ -567,6 +592,15 @@ button:disabled {
       SIMPAN DATA
     </button>
 
+    <button
+      class="btn-finish"
+      id="finishReceivingButton"
+      type="button"
+      onclick="finishReceiving()"
+    >
+      SELESAI PENERIMAAN / GANTI SURAT JALAN
+    </button>
+
     <div id="status" role="status" aria-live="polite"></div>
 
   </section>
@@ -619,6 +653,48 @@ document.getElementById("source").addEventListener(
   updateSourceInfo
 );
 
+document.querySelectorAll('input[name="transactionType"]').forEach(
+  function(radio) {
+    radio.addEventListener("change", updateSuratJalanVisibility);
+  }
+);
+
+function updateSuratJalanVisibility() {
+  const source = document.getElementById("source").value;
+  const transactionType = document.querySelector(
+    'input[name="transactionType"]:checked'
+  ).value;
+  const visible = source === "LOCAL" && transactionType === "IN";
+
+  document.getElementById("suratJalanField").style.display =
+    visible ? "block" : "none";
+  document.getElementById("suratJalan").required = visible;
+}
+
+function finishReceiving() {
+  const field = document.getElementById("suratJalan");
+  const current = field.value.trim();
+
+  if (!current) {
+    showStatus("Tidak ada Nomor Surat Jalan aktif.", "info");
+    return;
+  }
+
+  if (!confirm(
+    "Akhiri penerimaan untuk SJ " + current +
+    "? Nomor SJ akan dikosongkan untuk penerimaan berikutnya."
+  )) return;
+
+  field.value = "";
+  document.getElementById("partNumber").value = "";
+  document.getElementById("quantity").value = "";
+  showStatus(
+    "Penerimaan SJ " + current +
+    " telah diakhiri. Silakan masukkan nomor SJ berikutnya.",
+    "success"
+  );
+}
+
 function updateSourceInfo() {
 
   const source = document.getElementById("source").value;
@@ -637,7 +713,12 @@ function updateSourceInfo() {
 
   }
 
+
+  updateSuratJalanVisibility();
 }
+
+
+updateSourceInfo();
 
 
 /************************************************************
@@ -789,6 +870,8 @@ function saveData() {
     .getElementById("source")
     .value;
 
+  const suratJalan = document.getElementById("suratJalan").value.trim();
+
   const saveButton = document.getElementById("saveButton");
 
 
@@ -809,6 +892,16 @@ function saveData() {
 
     return;
 
+  }
+
+
+  if (source === "LOCAL" && transactionType === "IN" && !suratJalan) {
+    showStatus(
+      "Nomor Surat Jalan wajib diisi untuk transaksi LOCAL IN.",
+      "error"
+    );
+    document.getElementById("suratJalan").focus();
+    return;
   }
 
 
@@ -857,6 +950,9 @@ function saveData() {
     operator: operator,
     transactionType: transactionType,
     source: source,
+    suratJalan: (
+      source === "LOCAL" && transactionType === "IN" ? suratJalan : ""
+    ),
     callback: "receiveScanResult"
 
   });
@@ -929,6 +1025,7 @@ window.receiveScanResult = function(result) {
       "Part Number: " + result.partNumber + "\n" +
       "Number PO: " + result.numberPO + "\n" +
       "Transaksi: " + result.transactionType + "\n" +
+      (result.suratJalan ? "Nomor SJ: " + result.suratJalan + "\\n" : "") +
       "Qty Pack: " + result.qtyPack + "\n" +
       "Qty PCS: " + result.qtyPCS;
 
@@ -952,23 +1049,11 @@ window.receiveScanResult = function(result) {
     );
 
 
-    // RESET FORM SETELAH BERHASIL
-
+    // Kosongkan material saja. Nomor SJ, operator, sumber, dan jenis transaksi
+    // tetap dipertahankan agar satu SJ dapat mencakup banyak Part Number.
     document.getElementById("partNumber").value = "";
-
     document.getElementById("quantity").value = "";
-
-    document.getElementById("operator").value = "";
-
-    document.getElementById("source").value = "LOCAL";
-
-    document.getElementById("source").dispatchEvent(
-      new Event("change")
-    );
-
-    document.querySelector(
-      'input[name="transactionType"][value="IN"]'
-    ).checked = true;
+    document.getElementById("partNumber").focus();
 
   } else {
 
