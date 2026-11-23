@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#142338">
+<title>Material Movement | PT Ingress Industrial Indonesia</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --navy:#142338;
+  --navy2:#203650;
+  --red:#bd2634;
+  --bg:#f1f4f8;
+  --text:#1c2938;
+  --muted:#718096;
+  --border:#e1e7ee;
+  --green:#16804e;
+  --blue:#2563a6;
+}
+*{box-sizing:border-box}
+html,body{width:100%;min-height:100%;margin:0}
+body{
+  padding:12px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+.container{width:100%;max-width:none;margin:0}
+.header{
+  background:linear-gradient(115deg,var(--navy),var(--navy2));
+  color:#fff;border-radius:14px;padding:21px 24px;
+  border-top:5px solid var(--red);
+  display:flex;justify-content:space-between;
+  align-items:center;gap:15px;flex-wrap:wrap;
+  box-shadow:0 7px 20px #14233818;
+}
+.header h1{font-size:24px;margin:0 0 7px}
+.header p{font-size:12px;color:#d2dce8;margin:3px 0}
+.live{
+  font-size:11px;background:#ffffff1c;
+  border:1px solid #ffffff30;border-radius:25px;
+  padding:8px 12px;
+}
+.updated{font-size:10px;color:#d2dce8;margin-top:8px;text-align:right}
+.heading{
+  display:flex;justify-content:space-between;
+  align-items:center;gap:12px;margin:22px 0 12px;
+}
+.heading h2{font-size:16px;color:var(--navy);margin:0}
+.heading span{font-size:11px;color:var(--muted)}
+.cards{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+.card{
+  background:#fff;border:1px solid var(--border);
+  border-left:4px solid var(--blue);
+  border-radius:12px;padding:16px;min-height:100px;
+}
+.card.green{border-left-color:var(--green)}
+.card.red{border-left-color:var(--red)}
+.card.orange{border-left-color:#c65d19}
+.label{
+  font-size:10px;color:var(--muted);
+  font-weight:bold;letter-spacing:.4px;
+}
+.value{
+  font-size:25px;font-weight:800;
+  color:var(--navy);margin-top:10px;
+  overflow-wrap:anywhere;
+}
+.note{font-size:10px;color:var(--muted);margin-top:4px}
+.toolbar{
+  background:#fff;border:1px solid var(--border);
+  border-radius:12px;padding:13px;
+  display:flex;justify-content:space-between;
+  align-items:center;gap:10px;flex-wrap:wrap;
+}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search,.select,.date-input{
+  height:37px;border:1px solid var(--border);
+  border-radius:8px;padding:0 11px;
+  background:#fff;color:var(--text);font-size:12px;
+}
+.search{min-width:230px}
+.date-input{min-width:140px}
+.btn{
+  border:0;border-radius:8px;padding:10px 13px;
+  font-size:11px;font-weight:bold;cursor:pointer;
+  background:var(--navy);color:#fff;
+}
+.btn:disabled{opacity:.55;cursor:wait}
+.excel{background:var(--green)}
+.table-panel{
+  margin-top:12px;background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;
+}
+.table-scroll{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:1050px}
+th{
+  background:#203650;color:#fff;text-align:left;
+  font-size:10px;padding:13px 11px;white-space:nowrap;
+}
+td{
+  padding:12px 11px;border-bottom:1px solid #edf0f4;
+  font-size:11px;white-space:nowrap;
+}
+tbody tr:hover{background:#f8fafc}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.part{font-weight:bold;color:#203650}
+.source{
+  display:inline-block;border-radius:20px;
+  padding:5px 9px;font-size:9px;font-weight:bold;
+}
+.source.local{background:#e8f1fb;color:#245b91}
+.source.import{background:#e9f7ef;color:#16804e}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.error{
+  color:#bd2634;background:#fff1f1;
+  border:1px solid #ffd5d5;padding:15px;
+  border-radius:9px;white-space:normal;
+}
+.footer{
+  text-align:center;color:var(--muted);
+  font-size:10px;line-height:1.7;margin:25px 0 8px;
+}
+@media(max-width:850px){
+  body{padding:9px}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .header h1{font-size:20px}
+}
+@media(max-width:480px){
+  .cards{gap:8px}
+  .card{padding:12px;min-height:90px}
+  .value{font-size:21px}
+  .tools{width:100%}
+  .search{width:100%;min-width:0}
+  .select,.date-input{flex:1;min-width:0}
+  .btn{flex:1}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header class="header">
+  <div>
+    <h1 id="pageTitle">Incoming Material</h1>
+    <p>PT INGRESS INDUSTRIAL INDONESIA</p>
+    <p id="pageDescription">Monitoring material masuk LOCAL dan IMPORT</p>
+  </div>
+  <div>
+    <div class="live" id="liveLabel">● LIVE MOVEMENT DATA</div>
+    <div class="updated" id="lastUpdated">Menunggu data...</div>
+  </div>
+</header>
+
+<div class="heading">
+  <h2 id="overviewTitle">Incoming Overview</h2>
+  <span>Ringkasan pergerakan material</span>
+</div>
+
+<section class="cards">
+  <div class="card">
+    <div class="label">TOTAL TRANSAKSI</div>
+    <div class="value" id="totalTransaction">-</div>
+    <div class="note">Jumlah aktivitas transaksi</div>
+  </div>
+  <div class="card green">
+    <div class="label">TOTAL QUANTITY</div>
+    <div class="value" id="totalQuantity">-</div>
+    <div class="note">Total PCS</div>
+  </div>
+  <div class="card">
+    <div class="label">LOCAL TRANSACTION</div>
+    <div class="value" id="localCount">-</div>
+    <div class="note">Transaksi sumber LOCAL</div>
+  </div>
+  <div class="card orange">
+    <div class="label">IMPORT TRANSACTION</div>
+    <div class="value" id="importCount">-</div>
+    <div class="note">Transaksi sumber IMPORT</div>
+  </div>
+</section>
+
+<div class="heading">
+  <h2 id="tableTitle">Incoming Detail</h2>
+  <span id="recordCount">0 data</span>
+</div>
+
+<div class="toolbar">
+  <div class="tools">
+    <select class="select" id="periodFilter" onchange="renderTable()">
+      <option value="TODAY">Hari Ini</option>
+      <option value="YESTERDAY">Kemarin</option>
+      <option value="LAST7">7 Hari Terakhir</option>
+      <option value="CUSTOM">Pilih Periode</option>
+      <option value="ALL">Semua Tanggal</option>
+    </select>
+
+    <input class="date-input" type="date" id="dateStart"
+      onchange="renderTable()" title="Tanggal awal">
+
+    <input class="date-input" type="date" id="dateEnd"
+      onchange="renderTable()" title="Tanggal akhir">
+
+    <select class="select" id="sourceFilter" onchange="renderTable()">
+      <option value="ALL">Semua Sumber</option>
+      <option value="LOCAL">LOCAL</option>
+      <option value="IMPORT">IMPORT</option>
+    </select>
+
+    <input class="search" type="search" id="searchInput"
+      placeholder="Cari Part Number / Vendor / PO..."
+      oninput="renderTable()">
+  </div>
+
+  <div class="tools">
+    <button class="btn" id="refreshButton" onclick="loadMovement()">
+      ↻ REFRESH DATA
+    </button>
+    <button class="btn excel" onclick="downloadExcel()">
+      ↓ DOWNLOAD EXCEL
+    </button>
+  </div>
+</div>
+
+<div class="table-panel">
+  <div class="table-scroll">
+    <table>
+      <thead id="tableHead"></thead>
+      <tbody id="movementBody">
+        <tr><td class="empty">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer class="footer">
+  <b>PT INGRESS INDUSTRIAL INDONESIA</b><br>
+  Warehouse Inventory Management System<br>
+  <span id="footerPage">Material Movement</span>
+</footer>
+
+</div>
+
+<script>
+// ======================================================
+// KONFIGURASI HALAMAN
+// incoming.html : PAGE_TYPE = "IN"
+// outgoing.html : PAGE_TYPE = "OUT"
+// ======================================================
+
+const SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbxHt3FVgWrAuWSonItcHGSezO3XO60NmrA0jJ0R-T-Z_nIzkiZu0t2JQ5djR2KeHU6D/exec";
+
+const PAGE_TYPE = "OUT";
+const ACTION = PAGE_TYPE === "OUT" ? "incoming" : "outgoing";
+const PAGE_NAME = PAGE_TYPE === "OUT" ? "Incoming" : "Outgoing";
+const AUTO_REFRESH_MS = 30000;
+
+let movementData = [];
+let refreshTimer = null;
+let requestTimer = null;
+let requestId = 0;
+
+function fmt(v){
+  return new Intl.NumberFormat("id-ID").format(Number(v)||0);
+}
+
+function esc(v){
+  return String(v ?? "").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function localDateKey(value){
+  if(!value) return "";
+  const d = new Date(value);
+  if(isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+
+function todayKey(){
+  return localDateKey(new Date());
+}
+
+function shiftDateKey(days){
+  const d = new Date();
+  d.setDate(d.getDate()+days);
+  return localDateKey(d);
+}
+
+function dateFmt(value){
+  if(!value) return "-";
+  const d = new Date(value);
+  return isNaN(d.getTime())
+    ? String(value)
+    : d.toLocaleString("id-ID");
+}
+
+function setupPage(){
+  const isIncoming = PAGE_TYPE === "IN";
+  document.title = PAGE_NAME +
+    " | PT Ingress Industrial Indonesia";
+
+  document.getElementById("pageTitle").textContent =
+    PAGE_NAME + " Material";
+
+  document.getElementById("pageDescription").textContent =
+    isIncoming
+      ? "Monitoring material masuk LOCAL dan IMPORT"
+      : "Monitoring material keluar LOCAL dan IMPORT";
+
+  document.getElementById("overviewTitle").textContent =
+    PAGE_NAME + " Overview";
+
+  document.getElementById("tableTitle").textContent =
+    PAGE_NAME + " Detail";
+
+  document.getElementById("footerPage").textContent =
+    PAGE_NAME + " Material";
+
+  const head = isIncoming
+    ? ["NO","DATE & TIME","PART NUMBER","SOURCE","VENDOR",
+       "NUMBER PO","NUMBER SJ","QTY IN (PCS)","OPERATOR","REMARKS"]
+    : ["NO","DATE & TIME","PART NUMBER","SOURCE","VENDOR",
+       "NUMBER PO","QTY OUT (PCS)","OPERATOR","REMARKS"];
+
+  document.getElementById("tableHead").innerHTML =
+    "<tr>" + head.map(x=>`<th>${x}</th>`).join("") + "</tr>";
+
+  document.getElementById("dateStart").value = todayKey();
+  document.getElementById("dateEnd").value = todayKey();
+}
+
+function receiveMovementResult(r){
+  clearTimeout(requestTimer);
+
+  const button = document.getElementById("refreshButton");
+  button.disabled = false;
+  button.textContent = "↻ REFRESH DATA";
+
+  if(!r || !r.ok){
+    showError(r && r.message ? r.message : "Data tidak dapat dibaca.");
+    return;
+  }
+
+  movementData = Array.isArray(r.items) ? r.items : [];
+
+  updateDashboard(r.summary || {});
+  renderTable();
+
+  document.getElementById("lastUpdated").textContent =
+    "Last Update: " + dateFmt(r.updatedAt);
+}
+
+function loadMovement(){
+  const button = document.getElementById("refreshButton");
+
+  if(
+    !SCRIPT_URL.startsWith("https://script.google.com/macros/s/") ||
+    !SCRIPT_URL.endsWith("/exec")
+  ){
+    showError("URL Apps Script belum benar.");
+    return;
+  }
+
+  requestId++;
+  const id = requestId;
+
+  const old = document.getElementById("movementRequest");
+  if(old) old.remove();
+
+  clearTimeout(requestTimer);
+
+  button.disabled = true;
+  button.textContent = "MEMUAT...";
+
+  const params = new URLSearchParams({
+    action: ACTION,
+    callback: "receiveMovementResult",
+    cacheBust: Date.now()
+  });
+
+  const script = document.createElement("script");
+  script.id = "movementRequest";
+  script.src = SCRIPT_URL + "?" + params.toString();
+
+  script.onerror = ()=>{
+    if(id !== requestId) return;
+    clearTimeout(requestTimer);
+    button.disabled = false;
+    button.textContent = "↻ REFRESH DATA";
+    showError("Gagal menghubungi Apps Script. Periksa URL dan koneksi.");
+    script.remove();
+  };
+
+  requestTimer = setTimeout(()=>{
+    if(id !== requestId) return;
+    button.disabled = false;
+    button.textContent = "↻ REFRESH DATA";
+    showError("Server tidak memberikan respons. Silakan refresh kembali.");
+    script.remove();
+  },30000);
+
+  document.body.appendChild(script);
+}
+
+function updateDashboard(s){
+  document.getElementById("totalTransaction").textContent =
+    fmt(s.totalTransaction);
+
+  document.getElementById("totalQuantity").textContent =
+    fmt(s.totalQuantity);
+
+  document.getElementById("localCount").textContent =
+    fmt(s.localTransaction);
+
+  document.getElementById("importCount").textContent =
+    fmt(s.importTransaction);
+}
+
+function getFilteredData(){
+  const period = document.getElementById("periodFilter").value;
+  const source = document.getElementById("sourceFilter").value;
+  const query = document.getElementById("searchInput")
+    .value.trim().toLowerCase();
+
+  let start = "";
+  let end = "";
+
+  if(period === "TODAY"){
+    start = todayKey();
+    end = todayKey();
+  }else if(period === "YESTERDAY"){
+    start = shiftDateKey(-1);
+    end = shiftDateKey(-1);
+  }else if(period === "LAST7"){
+    start = shiftDateKey(-6);
+    end = todayKey();
+  }else if(period === "CUSTOM"){
+    start = document.getElementById("dateStart").value;
+    end = document.getElementById("dateEnd").value;
+  }
+
+  return movementData.filter(x=>{
+    const sourceMatch =
+      source === "ALL" || x.source === source;
+
+    const searchText = [
+      x.partNumber,x.vendor,x.numberPO,
+      x.suratJalan,x.operator,x.remarks,x.source
+    ].join(" ").toLowerCase();
+
+    const searchMatch = searchText.includes(query);
+
+    let dateMatch = true;
+
+    if(period !== "ALL"){
+      const dateKey = localDateKey(x.dateTime);
+
+      if(!dateKey){
+        dateMatch = false;
+      }else{
+        if(start && dateKey < start) dateMatch = false;
+        if(end && dateKey > end) dateMatch = false;
+      }
+    }
+
+    return sourceMatch && searchMatch && dateMatch;
+  });
+}
+
+function renderTable(){
+  const body = document.getElementById("movementBody");
+  const rows = getFilteredData();
+  const isIncoming = PAGE_TYPE === "IN";
+
+  document.getElementById("recordCount").textContent =
+    rows.length + " dari " + movementData.length + " transaksi";
+
+  if(!rows.length){
+    body.innerHTML =
+      `<tr><td colspan="${isIncoming?10:9}" class="empty">
+      Tidak ada transaksi pada periode atau filter yang dipilih.
+      </td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map((x,i)=>{
+    const sourceClass =
+      x.source === "LOCAL" ? "local" : "import";
+
+    if(isIncoming){
+      return `<tr>
+        <td>${i+1}</td>
+        <td>${esc(dateFmt(x.dateTime))}</td>
+        <td class="part">${esc(x.partNumber)}</td>
+        <td><span class="source ${sourceClass}">${esc(x.source)}</span></td>
+        <td>${esc(x.vendor||"-")}</td>
+        <td>${esc(x.numberPO||"-")}</td>
+        <td>${esc(x.suratJalan||"-")}</td>
+        <td class="num"><b>${fmt(x.quantity)}</b></td>
+        <td>${esc(x.operator||"-")}</td>
+        <td>${esc(x.remarks||"-")}</td>
+      </tr>`;
+    }
+
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${esc(dateFmt(x.dateTime))}</td>
+      <td class="part">${esc(x.partNumber)}</td>
+      <td><span class="source ${sourceClass}">${esc(x.source)}</span></td>
+      <td>${esc(x.vendor||"-")}</td>
+      <td>${esc(x.numberPO||"-")}</td>
+      <td class="num"><b>${fmt(x.quantity)}</b></td>
+      <td>${esc(x.operator||"-")}</td>
+      <td>${esc(x.remarks||"-")}</td>
+    </tr>`;
+  }).join("");
+}
+
+function downloadExcel(){
+  if(!window.XLSX){
+    alert("Library Excel belum termuat.");
+    return;
+  }
+
+  const rows = getFilteredData();
+  const isIncoming = PAGE_TYPE === "IN";
+
+  const headers = isIncoming
+    ? ["NO","DATE & TIME","PART NUMBER","SOURCE","VENDOR",
+       "NUMBER PO","NUMBER SJ","QTY IN PCS","OPERATOR","REMARKS"]
+    : ["NO","DATE & TIME","PART NUMBER","SOURCE","VENDOR",
+       "NUMBER PO","QTY OUT PCS","OPERATOR","REMARKS"];
+
+  const data = [headers];
+
+  rows.forEach((x,i)=>{
+    const common = [
+      i+1,
+      dateFmt(x.dateTime),
+      x.partNumber||"",
+      x.source||"",
+      x.vendor||"",
+      x.numberPO||""
+    ];
+
+    if(isIncoming){
+      data.push([
+        ...common,
+        x.suratJalan||"",
+        Number(x.quantity)||0,
+        x.operator||"",
+        x.remarks||""
+      ]);
+    }else{
+      data.push([
+        ...common,
+        Number(x.quantity)||0,
+        x.operator||"",
+        x.remarks||""
+      ]);
+    }
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    wb,ws,PAGE_NAME
+  );
+
+  XLSX.writeFile(
+    wb,
+    PAGE_NAME+"_Material_"+todayKey()+".xlsx"
+  );
+}
+
+function showError(message){
+  const cols = PAGE_TYPE === "IN" ? 10 : 9;
+
+  document.getElementById("movementBody").innerHTML =
+    `<tr><td colspan="${cols}">
+      <div class="error">
+        <b>Gagal memuat data ${PAGE_NAME}</b><br>
+        ${esc(message)}
+      </div>
+    </td></tr>`;
+}
+
+function startAutoRefresh(){
+  clearInterval(refreshTimer);
+
+  refreshTimer = setInterval(()=>{
+    if(!document.hidden) loadMovement();
+  },AUTO_REFRESH_MS);
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setupPage();
+  loadMovement();
+  startAutoRefresh();
+});
+</script>
+</body>
+</html>
