@@ -260,8 +260,8 @@ const SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbxHt3FVgWrAuWSonItcHGSezO3XO60NmrA0jJ0R-T-Z_nIzkiZu0t2JQ5djR2KeHU6D/exec";
 
 const PAGE_TYPE = "OUT";
-const ACTION = PAGE_TYPE === "OUT" ? "incoming" : "outgoing";
-const PAGE_NAME = PAGE_TYPE === "OUT" ? "Incoming" : "Outgoing";
+const ACTION = PAGE_TYPE === "OUT" ? "outgoing" : "incoming";
+const PAGE_NAME = PAGE_TYPE === "OUT" ? "Outgoing" : "Incoming";
 const AUTO_REFRESH_MS = 30000;
 
 let movementData = [];
