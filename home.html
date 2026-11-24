@@ -63,6 +63,7 @@ a {
   min-width: 0;
 }
 
+/* LOGO PT INGRESS */
 .company-logo {
   width: 300px;
   max-width: 45vw;
@@ -75,6 +76,7 @@ a {
   width: 1px;
   height: 42px;
   background: var(--border);
+  flex-shrink: 0;
 }
 
 .brand-info {
@@ -318,7 +320,7 @@ a {
   transform: translateX(3px);
 }
 
-/* ICON - THREE BRAND COLORS ONLY */
+/* ICON - NAVY, CYAN, RED */
 
 .menu-icon {
   width: 43px;
@@ -498,16 +500,7 @@ a {
 
 @media (max-width: 950px) {
   .dashboard-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .menu-list {
-    padding: 9px;
-  }
-
-  .menu-item {
-    gap: 9px;
-    padding: 12px 8px;
+    grid-template-columns: 1.1fr 1fr;
   }
 
   .company-logo {
@@ -612,12 +605,10 @@ a {
 
     <div class="brand">
 
-      <!-- LOGO PT INGRESS -->
-      <<img
-  src="logo-ingress.png"
-  class="company-logo"
-  alt="PT Ingress Industrial Indonesia"
->
+      <img
+        src="logo-ingress.png"
+        class="company-logo"
+        alt="PT Ingress Industrial Indonesia"
       >
 
       <div class="brand-divider"></div>
