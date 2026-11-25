@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vendor Delivery Performance | INGRESS WMS</title>
+<style>
+:root{--navy:#142338;--cyan:#00a6c7;--red:#bd2634;--green:#16804e;--bg:#f1f4f8;--muted:#718096;--line:#e5eaf0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:#243247}
+header{background:var(--navy);color:white;padding:19px 4%;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:20px;letter-spacing:.5px}.brand span{color:#35c4df}.sub{font-size:11px;color:#c8d3df;margin-top:4px}
+nav{display:flex;gap:8px;flex-wrap:wrap}nav a{color:#eaf4fb;text-decoration:none;font-size:12px;padding:9px 11px;border:1px solid #ffffff35;border-radius:8px}nav a.active,nav a:hover{background:var(--cyan);border-color:var(--cyan)}
+main{max-width:1400px;margin:26px auto;padding:0 22px 40px}.heading{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:25px;color:var(--navy);margin:0 0 6px}.subtitle{font-size:13px;color:var(--muted)}.status{font-size:12px;padding:9px 12px;background:white;border:1px solid var(--line);border-radius:8px;color:var(--muted)}.status.error{color:var(--red)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:17px}.card{background:white;border:1px solid #edf0f4;border-radius:13px;padding:17px;box-shadow:0 5px 18px #1423380c}
+.klabel{font-size:11px;color:var(--muted);font-weight:bold;letter-spacing:.5px}.kvalue{font-size:27px;color:var(--navy);font-weight:800;margin-top:9px}.knote{font-size:11px;color:var(--muted);margin-top:5px}
+.charts{display:grid;grid-template-columns:1.25fr .75fr;gap:15px;margin-bottom:17px}.card h2{font-size:15px;color:var(--navy);margin:0 0 14px}.chart{height:280px}canvas{width:100%;height:100%;display:block}
+.tablecard{padding:0;overflow:hidden}.tablehead{padding:17px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.controls{display:flex;gap:8px;flex-wrap:wrap}
+input,select{padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:white;font-size:12px;color:#243247;outline:none}input:focus,select:focus{border-color:var(--cyan)}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:850px}th{background:#f7f9fb;color:#64748b;font-size:10px;text-align:left;text-transform:uppercase;padding:12px;white-space:nowrap}td{font-size:12px;padding:13px 12px;border-top:1px solid var(--line);white-space:nowrap}tbody tr:hover{background:#f9fcfd}.num{text-align:right;font-variant-numeric:tabular-nums}.vendor{font-weight:bold;color:var(--navy)}
+.pill{padding:5px 8px;border-radius:20px;font-size:10px;font-weight:bold}.excellent{background:#e3f5ec;color:#147447}.good{background:#e4f4f8;color:#087d98}.monitor{background:#fff3d9;color:#9a6700}.low{background:#fde8e9;color:#b4232f}
+.progress{height:6px;background:#edf1f5;border-radius:10px;overflow:hidden;margin-top:6px;min-width:85px}.progress span{height:100%;display:block;background:var(--cyan)}
+.empty{text-align:center;padding:28px;color:var(--muted)}.foot{font-size:11px;color:var(--muted);line-height:1.6;margin:13px 2px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}
+@media(max-width:520px){header{padding:15px 17px}main{padding:0 12px 30px;margin-top:18px}.kpis{gap:9px}.card{padding:13px}.kvalue{font-size:22px}h1{font-size:21px}}
+</style></head>
+<body>
+<header><div><div class="brand">INGRESS <span>WMS</span></div><div class="sub">Warehouse Management System</div></div>
+<nav><a href="home.html">Home</a><a href="po-control.html">PO Control</a><a href="incoming.html">Incoming</a><a href="outgoing.html">Outgoing</a><a class="active" href="vendor-kpi.html">Vendor KPI</a></nav></header>
+<main>
+<div class="heading"><div><h1>Vendor Delivery Performance</h1><div class="subtitle">Monitoring pemenuhan PO berdasarkan Qty PO dan Qty Receiving</div></div><div id="loadStatus" class="status">Menghubungkan ke PO Control...</div></div>
+<section class="kpis">
+<div class="card"><div class="klabel">TOTAL VENDOR</div><div class="kvalue" id="totalVendor">-</div><div class="knote">Vendor terdaftar pada PO</div></div>
+<div class="card"><div class="klabel">TOTAL PO LINE</div><div class="kvalue" id="totalLine">-</div><div class="knote">Seluruh baris PO</div></div>
+<div class="card"><div class="klabel">TOTAL QTY PO</div><div class="kvalue" id="totalPO">-</div><div class="knote">Total quantity dipesan</div></div>
+<div class="card"><div class="klabel">OVERALL FULFILLMENT</div><div class="kvalue" id="overallRate">-</div><div class="knote">Total receiving ÷ total PO</div></div>
+</section>
+<section class="charts"><div class="card"><h2>Qty PO vs Qty Receiving per Vendor</h2><div class="chart"><canvas id="vendorChart"></canvas></div></div><div class="card"><h2>Overall Fulfillment</h2><div class="chart"><canvas id="fulfillmentChart"></canvas></div></div></section>
+<section class="card tablecard"><div class="tablehead"><h2 style="margin:0">Vendor Performance Ranking</h2><div class="controls"><input id="searchVendor" type="search" placeholder="Cari vendor..."><select id="sortVendor"><option value="rateDesc">Fulfillment tertinggi</option><option value="rateAsc">Fulfillment terendah</option><option value="outstandingDesc">Outstanding terbesar</option><option value="poDesc">Qty PO terbesar</option><option value="nameAsc">Nama vendor A-Z</option></select></div></div>
+<div class="scroll"><table><thead><tr><th>No</th><th>Vendor</th><th class="num">PO Line</th><th class="num">Qty PO</th><th class="num">Qty Receiving</th><th class="num">Outstanding</th><th>Fulfillment</th><th>Performance</th></tr></thead><tbody id="vendorRows"><tr><td colspan="8" class="empty">Menunggu data...</td></tr></tbody></table></div></section>
+<p class="foot">Fulfillment = total Qty Receiving ÷ total Qty PO × 100%. Kategori: Excellent ≥95%, Good ≥85%, Monitor ≥70%, Low &lt;70%. Kategori ini merupakan indikator awal dan dapat disesuaikan. Halaman ini hanya membaca data PO Control dan tidak mengubah transaksi WMS.</p>
+</main>
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxHt3FVgWrAuWSonItcHGSezO3XO60NmrA0jJ0R-T-Z_nIzkiZu0t2JQ5djR2KeHU6D/exec';
+let vendorData=[];
+const num=v=>{const n=Number(String(v??0).replace(/,/g,''));return Number.isFinite(n)?n:0};
+const fmt=v=>new Intl.NumberFormat('id-ID',{maximumFractionDigits:0}).format(v);
+const pct=v=>v.toFixed(1)+'%';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function status(msg,error=false){const e=document.getElementById('loadStatus');e.textContent=msg;e.className='status'+(error?' error':'')}
+function loadData(){
+ const cb='vendorKpi_'+Date.now(),script=document.createElement('script');let done=false;
+ const timer=setTimeout(()=>{if(done)return;done=true;delete window[cb];script.remove();status('Gagal memuat data. Periksa koneksi atau akses Apps Script.',true);document.getElementById('vendorRows').innerHTML='<tr><td colspan="8" class="empty">Data belum dapat dimuat.</td></tr>'},20000);
+ window[cb]=res=>{if(done)return;done=true;clearTimeout(timer);delete window[cb];script.remove();
+  if(!res||res.ok===false){status(res?.message||'Respons API tidak valid.',true);return}
+  const rows=Array.isArray(res.items)?res.items:(Array.isArray(res.data)?res.data:null);
+  if(!rows){status('Format API tidak sesuai: items tidak ditemukan.',true);return}
+  aggregate(rows);status('Data berhasil diperbarui');
+ };
+ script.onerror=()=>{if(done)return;done=true;clearTimeout(timer);delete window[cb];status('Tidak dapat menghubungi Apps Script.',true)};
+ script.src=SCRIPT_URL+'?action=po&callback='+cb+'&_='+Date.now();document.body.appendChild(script);
+}
+function aggregate(rows){
+ const map=new Map();
+ rows.forEach(r=>{
+  const vendor=String(r.vendor??r.Vendor??'').trim()||'Vendor tidak diketahui';
+  const po=num(r.qtyPO??r.qtyPo??r['Qty PO']),received=num(r.qtyReceiving??r.qtyReceived??r['Qty Receiving']);
+  const outstanding=num(r.outstanding??r.Outstanding??(po-received));
+  if(!map.has(vendor))map.set(vendor,{vendor,lines:0,qtyPO:0,qtyReceiving:0,outstanding:0});
+  const v=map.get(vendor);v.lines++;v.qtyPO+=po;v.qtyReceiving+=received;v.outstanding+=outstanding;
+ });
+ vendorData=[...map.values()].map(v=>({...v,rate:v.qtyPO>0?v.qtyReceiving/v.qtyPO*100:0}));render();
+}
+function rating(rate){if(rate>=95)return['Excellent','excellent'];if(rate>=85)return['Good','good'];if(rate>=70)return['Monitor','monitor'];return['Low','low']}
+function render(){
+ const totalPO=vendorData.reduce((s,v)=>s+v.qtyPO,0),received=vendorData.reduce((s,v)=>s+v.qtyReceiving,0);
+ document.getElementById('totalVendor').textContent=fmt(vendorData.length);
+ document.getElementById('totalLine').textContent=fmt(vendorData.reduce((s,v)=>s+v.lines,0));
+ document.getElementById('totalPO').textContent=fmt(totalPO);
+ const overall=totalPO?received/totalPO*100:0;document.getElementById('overallRate').textContent=pct(overall);
+ const q=document.getElementById('searchVendor').value.toLowerCase(),sort=document.getElementById('sortVendor').value;
+ const list=vendorData.filter(v=>v.vendor.toLowerCase().includes(q));
+ list.sort((a,b)=>sort==='rateAsc'?a.rate-b.rate:sort==='outstandingDesc'?b.outstanding-a.outstanding:sort==='poDesc'?b.qtyPO-a.qtyPO:sort==='nameAsc'?a.vendor.localeCompare(b.vendor):b.rate-a.rate);
+ const tbody=document.getElementById('vendorRows');
+ tbody.innerHTML=list.length?list.map((v,i)=>{const [label,cls]=rating(v.rate);return `<tr><td>${i+1}</td><td class="vendor">${esc(v.vendor)}</td><td class="num">${fmt(v.lines)}</td><td class="num">${fmt(v.qtyPO)}</td><td class="num">${fmt(v.qtyReceiving)}</td><td class="num">${fmt(v.outstanding)}</td><td><b>${pct(v.rate)}</b><div class="progress"><span style="width:${Math.max(0,Math.min(100,v.rate))}%"></span></div></td><td><span class="pill ${cls}">${label}</span></td></tr>`}).join(''):'<tr><td colspan="8" class="empty">Vendor tidak ditemukan.</td></tr>';
+ drawVendorChart(list);drawFulfillment(overall);
+}
+function canvasSetup(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;c.width=Math.max(1,r.width*d);c.height=Math.max(1,r.height*d);const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);return{x,w:r.width,h:r.height}}
+function drawVendorChart(data){
+ const {x,w,h}=canvasSetup(document.getElementById('vendorChart'));x.clearRect(0,0,w,h);
+ if(!data.length){x.fillStyle='#718096';x.font='13px Arial';x.fillText('Belum ada data vendor',10,25);return}
+ const arr=data.slice(0,8),left=110,top=10,bottom=18,row=(h-top-bottom)/arr.length,max=Math.max(1,...arr.map(v=>v.qtyPO)),pw=w-left-12;
+ arr.forEach((v,i)=>{const y=top+i*row+row/2;x.textAlign='right';x.textBaseline='middle';x.font='10px Arial';x.fillStyle='#526174';x.fillText(v.vendor.length>16?v.vendor.slice(0,15)+'…':v.vendor,left-8,y);x.fillStyle='#dce5ee';x.fillRect(left,y-9,pw*v.qtyPO/max,7);x.fillStyle='#00a6c7';x.fillRect(left,y+2,pw*v.qtyReceiving/max,7)});
+ x.textAlign='left';x.textBaseline='alphabetic';x.font='10px Arial';x.fillStyle='#dce5ee';x.fillRect(left,h-7,9,7);x.fillStyle='#718096';x.fillText('Qty PO',left+13,h);x.fillStyle='#00a6c7';x.fillRect(left+70,h-7,9,7);x.fillStyle='#718096';x.fillText('Receiving',left+83,h);
+}
+function drawFulfillment(rate){
+ const {x,w,h}=canvasSetup(document.getElementById('fulfillmentChart'));x.clearRect(0,0,w,h);const cx=w/2,cy=h/2-5,r=Math.min(w,h)*.31,lw=Math.max(14,r*.22);
+ x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.strokeStyle='#e9eef3';x.lineWidth=lw;x.stroke();
+ x.beginPath();x.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(0,Math.min(100,rate))/100);x.strokeStyle='#00a6c7';x.lineWidth=lw;x.lineCap='round';x.stroke();
+ x.textAlign='center';x.textBaseline='middle';x.fillStyle='#142338';x.font='bold 27px Arial';x.fillText(pct(rate),cx,cy);x.fillStyle='#718096';x.font='11px Arial';x.fillText('Fulfillment',cx,cy+25);
+}
+document.getElementById('searchVendor').addEventListener('input',render);
+document.getElementById('sortVendor').addEventListener('change',render);
+window.addEventListener('resize',()=>{if(vendorData.length)render()});
+loadData();
+</script></body></html>
