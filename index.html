@@ -23,21 +23,14 @@
   --green: #16794a;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   padding: 22px 14px 36px;
-  background: linear-gradient(
-    145deg,
-    #e8edf3 0%,
-    #f6f8fb 55%,
-    #e9eef4 100%
-  );
+  background: linear-gradient(145deg,#e8edf3 0%,#f6f8fb 55%,#e9eef4 100%);
   color: var(--ink);
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-family: Inter,"Segoe UI",Arial,sans-serif;
 }
 
 .app {
@@ -81,11 +74,7 @@ body {
 }
 
 .hero {
-  background: linear-gradient(
-    120deg,
-    var(--navy),
-    var(--navy-2)
-  );
+  background: linear-gradient(120deg,var(--navy),var(--navy-2));
   color: white;
   border-radius: 18px;
   padding: 20px;
@@ -176,9 +165,7 @@ h1 {
   font-size: 13px;
 }
 
-#reader video {
-  border-radius: 12px;
-}
+#reader video { border-radius: 12px; }
 
 #reader__dashboard_section_csr button {
   border: 0 !important;
@@ -188,9 +175,7 @@ h1 {
   color: white !important;
 }
 
-.field {
-  margin-top: 15px;
-}
+.field { margin-top: 15px; }
 
 label {
   display: block;
@@ -200,8 +185,7 @@ label {
   margin-bottom: 7px;
 }
 
-input,
-select {
+input, select {
   width: 100%;
   min-height: 48px;
   padding: 12px 13px;
@@ -211,11 +195,10 @@ select {
   color: var(--ink);
   font-size: 15px;
   outline: none;
-  transition: border .15s, box-shadow .15s;
+  transition: border .15s,box-shadow .15s;
 }
 
-input:focus,
-select:focus {
+input:focus, select:focus {
   border-color: var(--red);
   box-shadow: 0 0 0 3px rgba(189,38,52,.10);
 }
@@ -258,9 +241,7 @@ select:focus {
   background: #f8fafc;
 }
 
-.transaction-options input {
-  display: none;
-}
+.transaction-options input { display: none; }
 
 .transaction-options label:has(input:checked) {
   border: 2px solid var(--green);
@@ -282,17 +263,11 @@ button {
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  transition: transform .12s, opacity .12s;
+  transition: transform .12s,opacity .12s;
 }
 
-button:active {
-  transform: scale(.99);
-}
-
-button:disabled {
-  opacity: .6;
-  cursor: wait;
-}
+button:active { transform: scale(.99); }
+button:disabled { opacity: .6; cursor: wait; }
 
 .btn-scan {
   margin-top: 12px;
@@ -308,9 +283,7 @@ button:disabled {
   box-shadow: 0 5px 12px rgba(189,38,52,.18);
 }
 
-.btn-save:hover {
-  background: var(--red-dark);
-}
+.btn-save:hover { background: var(--red-dark); }
 
 .btn-finish {
   margin-top: 9px;
@@ -333,9 +306,7 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
-#status.show {
-  display: block;
-}
+#status.show { display: block; }
 
 #status.success {
   color: #12633d;
@@ -364,21 +335,10 @@ button:disabled {
 }
 
 @media (max-width: 380px) {
-  body {
-    padding: 12px 10px 24px;
-  }
-
-  .panel {
-    padding: 15px;
-  }
-
-  .topbar {
-    padding: 14px;
-  }
-
-  h1 {
-    font-size: 21px;
-  }
+  body { padding: 12px 10px 24px; }
+  .panel { padding: 15px; }
+  .topbar { padding: 14px; }
+  h1 { font-size: 21px; }
 }
 </style>
 </head>
@@ -388,38 +348,24 @@ button:disabled {
 <main class="app">
 
   <header class="topbar">
-
     <img
       class="brand-logo"
       src="logo-ingress.png"
       alt="PT Ingress Industrial Indonesia"
       onerror="this.style.display='none'"
     >
-
     <div class="brand-line"></div>
-
-    <div class="brand-caption">
-      Warehouse Material Control
-    </div>
-
+    <div class="brand-caption">Warehouse Material Control</div>
   </header>
 
-
   <section class="hero">
-
-    <div class="eyebrow">
-      Warehouse Digital System
-    </div>
-
+    <div class="eyebrow">Warehouse Digital System</div>
     <h1>Scanner Material Gudang</h1>
-
     <p>
       Scan barcode, catat jumlah material,
       dan pilih sumber serta jenis transaksi.
     </p>
-
   </section>
-
 
   <section class="panel">
 
@@ -439,11 +385,8 @@ button:disabled {
       BUKA KAMERA / SCAN BARCODE
     </button>
 
-
     <!-- QR CODE -->
-
     <div class="field">
-
       <label for="partNumber">
         QR CODE / PART NUMBER + NUMBER PO
       </label>
@@ -459,17 +402,11 @@ button:disabled {
         Barcode harus berisi gabungan Part Number dan Number PO
         sesuai data di PO Control.
       </div>
-
     </div>
 
-
     <!-- QUANTITY -->
-
     <div class="field">
-
-      <label for="quantity">
-        QUANTITY (PACK)
-      </label>
+      <label for="quantity">QUANTITY (PACK)</label>
 
       <input
         id="quantity"
@@ -484,60 +421,61 @@ button:disabled {
         Jumlah PCS dihitung otomatis berdasarkan Qty Per Pack
         di Master Stock.
       </div>
-
     </div>
 
-
     <!-- SOURCE -->
-
     <div class="field">
-
-      <label for="source">
-        SUMBER STOK
-      </label>
+      <label for="source">SUMBER STOK</label>
 
       <select id="source">
-
-        <option value="LOCAL">
-          LOCAL
-        </option>
-
-        <option value="IMPORT">
-          IMPORT
-        </option>
-
+        <option value="LOCAL">LOCAL</option>
+        <option value="IMPORT">IMPORT</option>
       </select>
 
       <div class="source-info" id="sourceHelper">
         LOCAL: Transaksi masuk dan keluar menggunakan stok LOCAL.
       </div>
-
     </div>
-
 
     <!-- NOMOR SURAT JALAN - KHUSUS LOCAL IN -->
     <div class="field" id="suratJalanField">
       <label for="suratJalan">NOMOR SURAT JALAN</label>
+
       <input
         id="suratJalan"
         type="text"
         placeholder="Masukkan nomor surat jalan"
         autocomplete="off"
       >
+
       <div class="helper">
-        Khusus LOCAL IN. Nomor ini dipertahankan untuk beberapa Part Number
-        dalam satu dokumen penerimaan.
+        Khusus LOCAL IN. Nomor ini dipertahankan untuk beberapa
+        Part Number dalam satu dokumen penerimaan.
       </div>
     </div>
 
+    <!-- MATERIAL REQUEST ID - KHUSUS OUT -->
+    <div class="field" id="requestIdField" style="display:none;">
+      <label for="requestId">MATERIAL REQUEST ID</label>
+
+      <input
+        id="requestId"
+        type="text"
+        placeholder="Contoh: MR-20261128-31192ED4"
+        autocomplete="off"
+        style="text-transform:uppercase;"
+      >
+
+      <div class="helper">
+        Isi Request ID dari INGRESS Material Shop jika material
+        keluar berdasarkan permintaan. Kosongkan jika transaksi
+        OUT biasa.
+      </div>
+    </div>
 
     <!-- OPERATOR -->
-
     <div class="field">
-
-      <label for="operator">
-        NAMA OPERATOR
-      </label>
+      <label for="operator">NAMA OPERATOR</label>
 
       <input
         id="operator"
@@ -545,14 +483,10 @@ button:disabled {
         placeholder="Masukkan nama operator"
         autocomplete="name"
       >
-
     </div>
 
-
     <!-- TRANSACTION TYPE -->
-
     <div class="field">
-
       <label>JENIS TRANSAKSI</label>
 
       <div class="transaction-options">
@@ -577,12 +511,9 @@ button:disabled {
         </label>
 
       </div>
-
     </div>
 
-
     <!-- SAVE -->
-
     <button
       class="btn-save"
       id="saveButton"
@@ -605,16 +536,12 @@ button:disabled {
 
   </section>
 
-
   <footer class="foot">
-
     PT. Ingress Industrial Indonesia<br>
     Warehouse Material Control System
-
   </footer>
 
 </main>
-
 
 <script>
 
@@ -635,12 +562,9 @@ let requestTimeout = null;
  ************************************************************/
 
 function showStatus(message, type) {
-
   const status = document.getElementById("status");
-
   status.textContent = message;
   status.className = "show " + type;
-
 }
 
 
@@ -653,25 +577,48 @@ document.getElementById("source").addEventListener(
   updateSourceInfo
 );
 
-document.querySelectorAll('input[name="transactionType"]').forEach(
-  function(radio) {
-    radio.addEventListener("change", updateSuratJalanVisibility);
-  }
-);
+document.querySelectorAll(
+  'input[name="transactionType"]'
+).forEach(function(radio) {
+  radio.addEventListener("change", updateSuratJalanVisibility);
+});
+
+
+/************************************************************
+ * VISIBILITY FIELD
+ ************************************************************/
 
 function updateSuratJalanVisibility() {
+
   const source = document.getElementById("source").value;
+
   const transactionType = document.querySelector(
     'input[name="transactionType"]:checked'
   ).value;
-  const visible = source === "LOCAL" && transactionType === "IN";
 
+  const isLocalIn =
+    source === "LOCAL" && transactionType === "IN";
+
+  const isOut = transactionType === "OUT";
+
+  // Nomor Surat Jalan hanya untuk LOCAL IN
   document.getElementById("suratJalanField").style.display =
-    visible ? "block" : "none";
-  document.getElementById("suratJalan").required = visible;
+    isLocalIn ? "block" : "none";
+
+  document.getElementById("suratJalan").required = isLocalIn;
+
+  // Request ID untuk LOCAL OUT dan IMPORT OUT
+  document.getElementById("requestIdField").style.display =
+    isOut ? "block" : "none";
 }
 
+
+/************************************************************
+ * FINISH RECEIVING
+ ************************************************************/
+
 function finishReceiving() {
+
   const field = document.getElementById("suratJalan");
   const current = field.value.trim();
 
@@ -688,6 +635,7 @@ function finishReceiving() {
   field.value = "";
   document.getElementById("partNumber").value = "";
   document.getElementById("quantity").value = "";
+
   showStatus(
     "Penerimaan SJ " + current +
     " telah diakhiri. Silakan masukkan nomor SJ berikutnya.",
@@ -695,10 +643,14 @@ function finishReceiving() {
   );
 }
 
+
+/************************************************************
+ * SOURCE HELPER
+ ************************************************************/
+
 function updateSourceInfo() {
 
   const source = document.getElementById("source").value;
-
   const helper = document.getElementById("sourceHelper");
 
   if (source === "LOCAL") {
@@ -713,10 +665,8 @@ function updateSourceInfo() {
 
   }
 
-
   updateSuratJalanVisibility();
 }
-
 
 updateSourceInfo();
 
@@ -732,17 +682,14 @@ async function startScanner() {
   try {
 
     if (typeof Html5Qrcode === "undefined") {
-
       throw new Error(
         "Library scanner tidak berhasil dimuat. Periksa koneksi internet."
       );
-
     }
 
     if (!scanner) {
 
       const formats = [
-
         Html5QrcodeSupportedFormats.EAN_13,
         Html5QrcodeSupportedFormats.EAN_8,
         Html5QrcodeSupportedFormats.CODE_128,
@@ -751,33 +698,24 @@ async function startScanner() {
         Html5QrcodeSupportedFormats.UPC_A,
         Html5QrcodeSupportedFormats.UPC_E,
         Html5QrcodeSupportedFormats.QR_CODE
-
       ];
 
       scanner = new Html5Qrcode(
         "reader",
         { formatsToSupport: formats }
       );
-
     }
 
     if (scannerRunning) {
 
       await scanner.stop();
-
       scannerRunning = false;
 
-      button.textContent =
-        "BUKA KAMERA / SCAN BARCODE";
-
+      button.textContent = "BUKA KAMERA / SCAN BARCODE";
       return;
-
     }
 
-    showStatus(
-      "Meminta akses kamera...",
-      "info"
-    );
+    showStatus("Meminta akses kamera...", "info");
 
     await scanner.start(
 
@@ -797,27 +735,20 @@ async function startScanner() {
           decodedText;
 
         if (scannerRunning) {
-
           await scanner.stop();
-
           scannerRunning = false;
-
         }
 
-        button.textContent =
-          "BUKA KAMERA / SCAN BARCODE";
+        button.textContent = "BUKA KAMERA / SCAN BARCODE";
 
         showStatus(
           "Barcode berhasil dibaca. Silakan isi Quantity, Sumber Stok, dan Nama Operator.",
           "success"
         );
-
       }
-
     );
 
     scannerRunning = true;
-
     button.textContent = "HENTIKAN KAMERA";
 
     showStatus(
@@ -828,17 +759,13 @@ async function startScanner() {
   } catch (error) {
 
     scannerRunning = false;
-
-    button.textContent =
-      "BUKA KAMERA / SCAN BARCODE";
+    button.textContent = "BUKA KAMERA / SCAN BARCODE";
 
     showStatus(
       "Kamera gagal dibuka: " + error,
       "error"
     );
-
   }
-
 }
 
 
@@ -870,12 +797,21 @@ function saveData() {
     .getElementById("source")
     .value;
 
-  const suratJalan = document.getElementById("suratJalan").value.trim();
+  const suratJalan = document
+    .getElementById("suratJalan")
+    .value
+    .trim();
+
+  const requestId = document
+    .getElementById("requestId")
+    .value
+    .trim()
+    .toUpperCase();
 
   const saveButton = document.getElementById("saveButton");
 
 
-  // VALIDASI DATA
+  // VALIDASI DATA UTAMA
 
   if (
     !qr ||
@@ -891,16 +827,41 @@ function saveData() {
     );
 
     return;
-
   }
 
 
-  if (source === "LOCAL" && transactionType === "IN" && !suratJalan) {
+  // VALIDASI LOCAL IN
+
+  if (
+    source === "LOCAL" &&
+    transactionType === "IN" &&
+    !suratJalan
+  ) {
+
     showStatus(
       "Nomor Surat Jalan wajib diisi untuk transaksi LOCAL IN.",
       "error"
     );
+
     document.getElementById("suratJalan").focus();
+    return;
+  }
+
+
+  // VALIDASI MATERIAL REQUEST ID UNTUK OUT
+
+  if (
+    transactionType === "OUT" &&
+    requestId &&
+    !/^MR-\d{8}-[A-F0-9]{8}$/i.test(requestId)
+  ) {
+
+    showStatus(
+      "Format Material Request ID tidak valid.\nContoh: MR-20261128-31192ED4",
+      "error"
+    );
+
+    document.getElementById("requestId").focus();
     return;
   }
 
@@ -920,7 +881,6 @@ function saveData() {
     );
 
     return;
-
   }
 
 
@@ -941,6 +901,8 @@ function saveData() {
 
 
   // PARAMETER API
+  // Request ID OUT dikirim melalui parameter suratJalan
+  // sesuai integrasi Code.gs Material Shop.
 
   const params = new URLSearchParams({
 
@@ -950,11 +912,14 @@ function saveData() {
     operator: operator,
     transactionType: transactionType,
     source: source,
-    suratJalan: (
-      source === "LOCAL" && transactionType === "IN" ? suratJalan : ""
-    ),
-    callback: "receiveScanResult"
 
+    suratJalan: (
+      source === "LOCAL" && transactionType === "IN"
+        ? suratJalan
+        : (transactionType === "OUT" ? requestId : "")
+    ),
+
+    callback: "receiveScanResult"
   });
 
 
@@ -980,7 +945,6 @@ function saveData() {
     );
 
     script.remove();
-
   };
 
 
@@ -1001,7 +965,6 @@ function saveData() {
 
 
   document.body.appendChild(script);
-
 }
 
 
@@ -1017,6 +980,7 @@ window.receiveScanResult = function(result) {
 
   saveButton.disabled = false;
 
+
   if (result && result.ok) {
 
     let message =
@@ -1025,34 +989,58 @@ window.receiveScanResult = function(result) {
       "Part Number: " + result.partNumber + "\n" +
       "Number PO: " + result.numberPO + "\n" +
       "Transaksi: " + result.transactionType + "\n" +
-      (result.suratJalan ? "Nomor SJ: " + result.suratJalan + "\\n" : "") +
+      (result.suratJalan ? "Nomor SJ: " + result.suratJalan + "\n" : "") +
       "Qty Pack: " + result.qtyPack + "\n" +
       "Qty PCS: " + result.qtyPCS;
+
 
     if (result.batchesUsed) {
 
       message +=
         "\nBatch FIFO digunakan: " + result.batchesUsed;
-
     }
+
+
+    // STATUS SINKRONISASI MATERIAL SHOP
+
+    if (result.materialShopSync === "SUCCESS") {
+
+      message +=
+        "\n\nMaterial Shop: BERHASIL DISINKRONKAN";
+    }
+
+    if (result.materialShopSync === "DUPLICATE") {
+
+      message +=
+        "\n\nMaterial Shop: Transaksi sudah pernah disinkronkan";
+    }
+
+    if (result.materialShopSync === "PENDING") {
+
+      message +=
+        "\n\nPERHATIAN: " +
+        (result.syncWarning || "Sinkronisasi Material Shop tertunda.") +
+        "\nTransaksi WMS sudah tersimpan. Jangan scan ulang transaksi yang sama.";
+    }
+
 
     if (result.refreshWarning) {
 
       message +=
         "\n\nPERHATIAN: Refresh gagal. Jalankan refreshWMS secara manual.";
-
     }
 
-    showStatus(
-      message,
-      "success"
-    );
+
+    showStatus(message, "success");
 
 
-    // Kosongkan material saja. Nomor SJ, operator, sumber, dan jenis transaksi
-    // tetap dipertahankan agar satu SJ dapat mencakup banyak Part Number.
+    // KOSONGKAN DATA MATERIAL SETELAH BERHASIL
+    // Nomor SJ dan operator tetap dipertahankan.
+
     document.getElementById("partNumber").value = "";
     document.getElementById("quantity").value = "";
+    document.getElementById("requestId").value = "";
+
     document.getElementById("partNumber").focus();
 
   } else {
@@ -1066,13 +1054,12 @@ window.receiveScanResult = function(result) {
       ),
       "error"
     );
-
   }
+
 
   const script = document.getElementById("sendRequest");
 
   if (script) script.remove();
-
 };
 
 
